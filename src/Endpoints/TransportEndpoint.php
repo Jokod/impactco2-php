@@ -25,9 +25,9 @@ class TransportEndpoint extends Endpoint
         int $distance,
         array $transports = null,
         bool $displayAll = false,
-        int $ignoreRadiativeForcing = 0,
         int $occupencyRate = 1,
-        int $includeConstruction = 0
+        int $includeConstruction = 0,
+        int $ignoreRadiativeForcing = 0,
     ) {
         if ($distance <= 0) {
             throw new \InvalidArgumentException('Distance must be a positive integer');
