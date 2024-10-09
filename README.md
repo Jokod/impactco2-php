@@ -18,4 +18,4 @@ composer require jokod/impactco2-php
 
 ## Utilisation
 
-Retrouver l'ensemble des endpoints disponibles sur la documentation officielle de l'API ImpactCO2 : [Documentation API](https://impactco2.fr/doc/api).
+Retrouver l'ensemble des endpoints disponibles sur la documentation officielle de l'API ImpactCO2 : <a href="https://impactco2.fr/doc/api" target="_blank">Documentation API</a>.

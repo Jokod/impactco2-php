@@ -34,7 +34,7 @@ class Item
 
     /**
      * Get the value of value
-     * 
+     *
      * @return float
      */
     public function getValue(): float

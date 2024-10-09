@@ -2,7 +2,7 @@
 
 namespace Jokod\Impactco2Php\Enum;
 
-class TypeEnum
+class TransportsEnum
 {
     public const AVION = 1;
     public const TGV = 2;
