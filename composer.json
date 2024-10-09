@@ -1,0 +1,30 @@
+{
+    "name": "jokod/impactco2-php",
+    "description": "Une librairie PHP permettant de comparer la consommation en CO₂e de divers équivalents",
+    "keywords": ["impact", "co2", "ademe", "impact carbone", "bilan carbone", "empreinte carbone", "co2e", "équivalent carbone"],
+    "type": "library",
+    "license": "MIT",
+    "minimum-stability": "stable",
+    "version": "0.0.1",
+    "authors": [
+        {
+            "name": "Jordan.B",
+            "email": "jb.jokod@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.0",
+        "monolog/monolog": "^3.7",
+        "guzzlehttp/guzzle": "^7.9",
+        "guzzlehttp/psr7": "^2.7"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^1.12",
+        "friendsofphp/php-cs-fixer": "^3.64"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jokod\\Impactco2Php\\": "src/"
+        }
+    }
+}
