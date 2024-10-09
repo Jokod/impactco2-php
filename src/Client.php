@@ -6,6 +6,7 @@ namespace Jokod\Impactco2Php;
 
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface;
+use Jokod\Impactco2Php\Endpoints\Endpoint;
 use Jokod\Impactco2Php\Enum\LanguagesEnum;
 use Monolog\Handler\StreamHandler as MonologStreamHandler;
 use Monolog\Logger;
@@ -22,8 +23,6 @@ class Client
      */
     private ?string $apiKey;
 
-    private string $endpoint;
-
     private string $language;
 
     /**
@@ -35,7 +34,7 @@ class Client
 
     private ClientInterface $httpClient;
 
-    private ?LoggerInterface $logger;
+    private LoggerInterface $logger;
 
     /**
      * Constructor.
@@ -46,16 +45,10 @@ class Client
     {
         $this->config = \array_merge([
             'base_path' => self::API_BASE_PATH,
-            'endpoint'  => '',
             'api_key'   => '',
             'language'  => LanguagesEnum::default(),
             'logger'    => null,
         ], $config);
-
-        if (isset($this->config['endpoint']) && \is_string($this->config['endpoint'])) {
-            $this->setEndpoint($this->config['endpoint']);
-            unset($this->config['endpoint']);
-        }
 
         if (isset($this->config['api_key']) && \is_string($this->config['api_key'])) {
             $this->setApiKey($this->config['api_key']);
@@ -70,19 +63,23 @@ class Client
         if (!is_null($this->config['logger'])) {
             $this->setLogger($this->config['logger']);
             unset($this->config['logger']);
+        } else {
+            $this->setLogger($this->createDefaultLogger());
         }
     }
 
     /**
      * Call the endpoint of the API
      *
-     * @param string[] $options
+     * @param Endpoint $endpoint The config of endpoint to call
+     * @param string[] $options The options of the request
      *
-     * @return string JSON response
+     * @return mixed $content
+     * @throws \Exception
      */
-    public function execute(array $options = []): string
+    public function execute(Endpoint $endpoint, array $options = [])
     {
-        $path = $this->config['base_path'] . $this->endpoint;
+        $path = $this->config['base_path'] . $endpoint->getPath($this->getLanguage());
 
         $options = \array_merge([
             'headers' => [
@@ -98,9 +95,31 @@ class Client
             $options['headers']['Authorization'] = 'Bearer ' . $this->apiKey;
         }
 
-        $response = $this->getHttpClient()->request('GET', $path, $options);
+        try {
+            $response = $this->getHttpClient()->request('GET', $path, $options);
+            $content = json_decode($response->getBody()->getContents(), true);
 
-        return $response->getBody()->getContents();
+            if ($response->getStatusCode() !== 200) {
+                $errorMessage = 'Unknown error';
+                if (is_array($content) && isset($content['issues'])) {
+                    $errorMessage = \json_encode($content['issues']);
+                    if (!$errorMessage) {
+                        $errorMessage = 'Unknown error';
+                    }
+                }
+                throw new \Exception($errorMessage);
+            }
+
+            return $content;
+        } catch (\Exception $e) {
+            $this->getLogger()->error('Error during request', [
+                'exception' => $e,
+                'endpoint'  => $endpoint,
+                'options'   => $options,
+            ]);
+
+            return 'Erreur lors de la requête : ' . $e->getMessage();
+        }
     }
 
     /**
@@ -126,7 +145,7 @@ class Client
     protected function createDefaultLogger()
     {
         $logger = new Logger('impactco2-php');
-        $handler = new MonologStreamHandler('php://stderr', Logger::NOTICE);
+        $handler = new MonologStreamHandler('php://stderr', Logger::DEBUG);
         $logger->pushHandler($handler);
 
         return $logger;
@@ -156,26 +175,6 @@ class Client
     public function getConfig($name, $default = null)
     {
         return isset($this->config[$name]) ? $this->config[$name] : $default;
-    }
-
-    /**
-     * Set the endpoint.
-     *
-     * @param string $endpoint
-     */
-    public function setEndpoint(string $endpoint): void
-    {
-        $this->endpoint = $endpoint;
-    }
-
-    /**
-     * Get the endpoint.
-     *
-     * @return string
-     */
-    public function getEndpoint(): string
-    {
-        return $this->endpoint;
     }
 
     /**
@@ -271,14 +270,10 @@ class Client
     /**
      * Get the logger.
      *
-     * @return LoggerInterface|null
+     * @return LoggerInterface
      */
-    public function getLogger(): ?LoggerInterface
+    public function getLogger(): LoggerInterface
     {
-        if (!isset($this->logger)) {
-            $this->logger = $this->createDefaultLogger();
-        }
-
         return $this->logger;
     }
 }
