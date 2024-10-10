@@ -9,9 +9,9 @@
 
 # Executables: vendors
 COMPOSER	  = composer
-PHPUNIT       = $(PHP) ./vendor/bin/phpunit
-PHPSTAN       = $(PHP) ./vendor/bin/phpstan
-PHP_CS_FIXER  = $(PHP) ./vendor/bin/php-cs-fixer
+PHPUNIT       = ./vendor/bin/phpunit
+PHPSTAN       = ./vendor/bin/phpstan
+PHP_CS_FIXER  = ./vendor/bin/php-cs-fixer
 
 # Misc
 .DEFAULT_GOAL = help
@@ -38,3 +38,9 @@ lint: ## Lint files with php-cs-fixer
 
 fix: ## Fix files with php-cs-fixer
 	$(PHP_CS_FIXER) fix
+
+tests: ## Run tests
+	$(PHPUNIT) tests/
+
+tests-coverage: ## Run tests with coverage
+	$(PHPUNIT) --coverage-html=var/coverage src/
