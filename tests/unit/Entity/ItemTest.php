@@ -12,13 +12,13 @@ class ItemTest extends TestCase
     {
         $item = new Item();
         $item->setId(123);
-        $this->assertEquals(123, $item->getId());
+        $this->assertSame(123, $item->getId());
     }
 
     public function testSetAndGetValue(): void
     {
         $item = new Item();
         $item->setValue(456.78);
-        $this->assertEquals(456.78, $item->getValue());
+        $this->assertSame(456.78, $item->getValue());
     }
 }

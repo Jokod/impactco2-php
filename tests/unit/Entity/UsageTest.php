@@ -14,7 +14,7 @@ class UsageTest extends TestCase
         $usage = new Usage();
         $perYear = 100.5;
         $usage->setPerYear($perYear);
-        $this->assertEquals($perYear, $usage->getPerYear());
+        $this->assertSame($perYear, $usage->getPerYear());
     }
 
     public function testSetAndGetDefaultYears(): void
@@ -22,6 +22,6 @@ class UsageTest extends TestCase
         $usage = new Usage();
         $defaultYears = 5;
         $usage->setDefaultYears($defaultYears);
-        $this->assertEquals($defaultYears, $usage->getDefaultYears());
+        $this->assertSame($defaultYears, $usage->getDefaultYears());
     }
 }

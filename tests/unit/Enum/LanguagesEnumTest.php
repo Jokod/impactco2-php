@@ -9,12 +9,12 @@ class LanguagesEnumTest extends TestCase
 {
     public function testDefault(): void
     {
-        $this->assertEquals('fr', LanguagesEnum::default());
+        $this->assertSame('fr', LanguagesEnum::default());
     }
 
     public function testToArray(): void
     {
         $expected = ['fr', 'en', 'es', 'de'];
-        $this->assertEquals($expected, LanguagesEnum::toArray());
+        $this->assertSame($expected, LanguagesEnum::toArray());
     }
 }

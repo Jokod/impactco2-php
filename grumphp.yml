@@ -1,0 +1,15 @@
+grumphp:
+    tasks:
+        file_size:
+            max_size: 5M
+        phpcsfixer:
+            config: .php-cs-fixer.dist.php
+        phpstan:
+            level: 9
+            ignore_patterns:
+                - tests/
+            memory_limit: 1G
+    git_hook_variables:
+        PATH: '~/.composer/vendor/bin:$PATH'
+    fixer:
+        enabled: false

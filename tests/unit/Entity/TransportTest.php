@@ -12,20 +12,20 @@ class TransportTest extends TestCase
     {
         $transport = new Transport();
         $transport->setId(1);
-        $this->assertEquals(1, $transport->getId());
+        $this->assertSame(1, $transport->getId());
     }
 
     public function testGetSetName(): void
     {
         $transport = new Transport();
         $transport->setName('Bus');
-        $this->assertEquals('Bus', $transport->getName());
+        $this->assertSame('Bus', $transport->getName());
     }
 
     public function testGetSetValue(): void
     {
         $transport = new Transport();
         $transport->setValue(123.45);
-        $this->assertEquals(123.45, $transport->getValue());
+        $this->assertSame(123.45, $transport->getValue());
     }
 }

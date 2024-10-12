@@ -30,7 +30,7 @@ composer-update: composer.lock ## Update vendors to last version
 	$(COMPOSER) update
 
 ## —— Quality insurance ✨ ——————————————————————————————————————————————————————
-check: lint ## Run all coding standards checks
+check: lint test ## Run all coding standards checks
 
 lint: ## Lint files with php-cs-fixer
 	$(PHP_CS_FIXER) fix --dry-run
@@ -39,8 +39,8 @@ lint: ## Lint files with php-cs-fixer
 fix: ## Fix files with php-cs-fixer
 	$(PHP_CS_FIXER) fix
 
-tests: ## Run tests
-	$(PHPUNIT) tests/
+test: ## Run tests
+	$(PHPUNIT) --configuration phpunit.xml
 
-tests-coverage: ## Run tests with coverage
-	$(PHPUNIT) --coverage-text
+test-coverage: ## Run tests with coverage
+	$(PHPUNIT) --coverage-html=var/coverage --configuration phpunit.xml

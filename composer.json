@@ -5,7 +5,7 @@
     "type": "library",
     "license": "MIT",
     "minimum-stability": "stable",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "authors": [
         {
             "name": "Jordan.B",
@@ -16,7 +16,8 @@
         "php": "^8.1",
         "monolog/monolog": "^3.7",
         "guzzlehttp/guzzle": "^7.9",
-        "guzzlehttp/psr7": "^2.7"
+        "guzzlehttp/psr7": "^2.7",
+        "phpro/grumphp": "^2.8"
     },
     "require-dev": {
         "phpstan/phpstan": "^1.12",
@@ -26,6 +27,11 @@
     "autoload": {
         "psr-4": {
             "Jokod\\Impactco2Php\\": "src/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "phpro/grumphp": true
         }
     }
 }

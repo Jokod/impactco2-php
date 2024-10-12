@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Jokod\Impactco2Php;
+namespace Jokod\Impactco2Php\Exceptions;
 
 use Exception as BaseException;
 
