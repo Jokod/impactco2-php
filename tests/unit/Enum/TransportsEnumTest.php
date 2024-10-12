@@ -9,26 +9,50 @@ class TransportsEnumTest extends TestCase
 {
     public function testGetName(): void
     {
-        $this->assertEquals('Avion', TransportsEnum::getName(TransportsEnum::AVION));
-        $this->assertEquals('TGV', TransportsEnum::getName(TransportsEnum::TGV));
-        $this->assertEquals('Non défini', TransportsEnum::getName(null));
-        $this->assertEquals('Non défini', TransportsEnum::getName(999));
+        $this->assertSame('Avion', TransportsEnum::getName(TransportsEnum::PLANE));
+        $this->assertSame('TGV', TransportsEnum::getName(TransportsEnum::TGV));
+        $this->assertSame('Non défini', TransportsEnum::getName(null));
+        $this->assertSame('Non défini', TransportsEnum::getName(999));
     }
 
-    public function testGetEmoji(): void
+    public function testGetEmoji()
     {
-        $this->assertEquals('✈️', TransportsEnum::getEmoji(TransportsEnum::AVION));
-        $this->assertEquals('🚄', TransportsEnum::getEmoji(TransportsEnum::TGV));
-        $this->assertEquals('❓', TransportsEnum::getEmoji(null));
-        $this->assertEquals('❓', TransportsEnum::getEmoji(999));
+        $this->assertSame('✈️', TransportsEnum::getEmoji(TransportsEnum::PLANE));
+        $this->assertSame('🚄', TransportsEnum::getEmoji(TransportsEnum::TGV));
+        $this->assertSame('🚆', TransportsEnum::getEmoji(TransportsEnum::INTERCITY));
+        $this->assertSame('🚗', TransportsEnum::getEmoji(TransportsEnum::CAR));
+        $this->assertSame('🚗⚡', TransportsEnum::getEmoji(TransportsEnum::ELECTRIC_CAR));
+        $this->assertSame('🚌', TransportsEnum::getEmoji(TransportsEnum::BUS));
+        $this->assertSame('🚶', TransportsEnum::getEmoji(TransportsEnum::ON_FOOT));
+        $this->assertSame('🚴⚡', TransportsEnum::getEmoji(TransportsEnum::ELECTRIC_BIKE));
+        $this->assertSame('🚌', TransportsEnum::getEmoji(TransportsEnum::THERMAL_BUS));
+        $this->assertSame('🚊', TransportsEnum::getEmoji(TransportsEnum::TRAMWAY));
+        $this->assertSame('🚇', TransportsEnum::getEmoji(TransportsEnum::METRO));
+        $this->assertSame('🛵', TransportsEnum::getEmoji(TransportsEnum::SCOOTER));
+        $this->assertSame('🏍️', TransportsEnum::getEmoji(TransportsEnum::MOTORCYCLE));
+        $this->assertSame('🚇', TransportsEnum::getEmoji(TransportsEnum::RER_TRANSILIEN));
+        $this->assertSame('🚆', TransportsEnum::getEmoji(TransportsEnum::TER));
+        $this->assertSame('🚌⚡', TransportsEnum::getEmoji(TransportsEnum::ELECTRIC_BUS));
+        $this->assertSame('🛴⚡', TransportsEnum::getEmoji(TransportsEnum::ELECTRIC_SCOOTER));
+        $this->assertSame('🚌', TransportsEnum::getEmoji(TransportsEnum::GNV_BUS));
+        $this->assertSame('🚗👥', TransportsEnum::getEmoji(TransportsEnum::CARPOOLING_1));
+        $this->assertSame('🚗👥', TransportsEnum::getEmoji(TransportsEnum::CARPOOLING_2));
+        $this->assertSame('🚗👥', TransportsEnum::getEmoji(TransportsEnum::CARPOOLING_3));
+        $this->assertSame('🚗👥', TransportsEnum::getEmoji(TransportsEnum::CARPOOLING_4));
+        $this->assertSame('🚗⚡👥', TransportsEnum::getEmoji(TransportsEnum::ELECTRIC_CARPOOLING_1));
+        $this->assertSame('🚗⚡👥', TransportsEnum::getEmoji(TransportsEnum::ELECTRIC_CARPOOLING_2));
+        $this->assertSame('🚗⚡👥', TransportsEnum::getEmoji(TransportsEnum::ELECTRIC_CARPOOLING_3));
+        $this->assertSame('🚗⚡👥', TransportsEnum::getEmoji(TransportsEnum::ELECTRIC_CARPOOLING_4));
+        $this->assertSame('❓', TransportsEnum::getEmoji(null));
+        $this->assertSame('❓', TransportsEnum::getEmoji(999));
     }
 
     public function testToArray(): void
     {
         $expected = [
-            TransportsEnum::AVION,
+            TransportsEnum::PLANE,
             TransportsEnum::TGV,
-            TransportsEnum::INTERCITES,
+            TransportsEnum::INTERCITY,
             TransportsEnum::CAR,
             TransportsEnum::ELECTRIC_CAR,
             TransportsEnum::BUS,
@@ -53,6 +77,6 @@ class TransportsEnumTest extends TestCase
             TransportsEnum::ELECTRIC_CARPOOLING_3,
             TransportsEnum::ELECTRIC_CARPOOLING_4,
         ];
-        $this->assertEquals($expected, TransportsEnum::toArray());
+        $this->assertSame($expected, TransportsEnum::toArray());
     }
 }

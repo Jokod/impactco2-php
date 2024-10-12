@@ -12,20 +12,20 @@ class ThematicTest extends TestCase
     {
         $thematic = new Thematic();
         $thematic->setId(1);
-        $this->assertEquals(1, $thematic->getId());
+        $this->assertSame(1, $thematic->getId());
     }
 
     public function testGetAndSetName(): void
     {
         $thematic = new Thematic();
         $thematic->setName('Climate Change');
-        $this->assertEquals('Climate Change', $thematic->getName());
+        $this->assertSame('Climate Change', $thematic->getName());
     }
 
     public function testGetAndSetSlug(): void
     {
         $thematic = new Thematic();
         $thematic->setSlug('climate-change');
-        $this->assertEquals('climate-change', $thematic->getSlug());
+        $this->assertSame('climate-change', $thematic->getSlug());
     }
 }

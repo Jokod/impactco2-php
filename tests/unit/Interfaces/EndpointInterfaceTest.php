@@ -24,7 +24,7 @@ class EndpointInterfaceTest extends TestCase
             ->with($this->equalTo($language))
             ->willReturn($expectedPath);
 
-        $this->assertEquals($expectedPath, $this->mockEndpoint->getPath($language));
+        $this->assertSame($expectedPath, $this->mockEndpoint->getPath($language));
     }
 
     public function testGetPathWithDifferentLanguage(): void
@@ -36,6 +36,6 @@ class EndpointInterfaceTest extends TestCase
             ->with($this->equalTo($language))
             ->willReturn($expectedPath);
 
-        $this->assertEquals($expectedPath, $this->mockEndpoint->getPath($language));
+        $this->assertSame($expectedPath, $this->mockEndpoint->getPath($language));
     }
 }

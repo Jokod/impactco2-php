@@ -11,28 +11,28 @@ class HeaterEnumTest extends TestCase
 {
     public function testGetName(): void
     {
-        $this->assertEquals('Chauffage au gaz', HeaterEnum::getName(HeaterEnum::GAS_HEATING));
-        $this->assertEquals('Chauffage au fioul', HeaterEnum::getName(HeaterEnum::FUEL_OIL_HEATING));
-        $this->assertEquals('Chauffage électrique', HeaterEnum::getName(HeaterEnum::ELECTRIC_HEATING));
-        $this->assertEquals('Chauffage avec une pompe à chaleur', HeaterEnum::getName(HeaterEnum::HEAT_PUMP_HEATING));
-        $this->assertEquals('Chauffage avec un poêle à granulés', HeaterEnum::getName(HeaterEnum::PELLET_STOVE_HEATING));
-        $this->assertEquals('Chauffage avec un poêle à bois', HeaterEnum::getName(HeaterEnum::WOOD_STOVE_HEATING));
-        $this->assertEquals('Chauffage via un réseau de chaleur', HeaterEnum::getName(HeaterEnum::DISTRICT_HEATING));
-        $this->assertEquals('Undefined', HeaterEnum::getName(null));
-        $this->assertEquals('Undefined', HeaterEnum::getName(999));
+        $this->assertSame('Chauffage au gaz', HeaterEnum::getName(HeaterEnum::GAS_HEATING));
+        $this->assertSame('Chauffage au fioul', HeaterEnum::getName(HeaterEnum::FUEL_OIL_HEATING));
+        $this->assertSame('Chauffage électrique', HeaterEnum::getName(HeaterEnum::ELECTRIC_HEATING));
+        $this->assertSame('Chauffage avec une pompe à chaleur', HeaterEnum::getName(HeaterEnum::HEAT_PUMP_HEATING));
+        $this->assertSame('Chauffage avec un poêle à granulés', HeaterEnum::getName(HeaterEnum::PELLET_STOVE_HEATING));
+        $this->assertSame('Chauffage avec un poêle à bois', HeaterEnum::getName(HeaterEnum::WOOD_STOVE_HEATING));
+        $this->assertSame('Chauffage via un réseau de chaleur', HeaterEnum::getName(HeaterEnum::DISTRICT_HEATING));
+        $this->assertSame('Undefined', HeaterEnum::getName(null));
+        $this->assertSame('Undefined', HeaterEnum::getName(999));
     }
 
     public function testGetEmoji(): void
     {
-        $this->assertEquals('🔥', HeaterEnum::getEmoji(HeaterEnum::GAS_HEATING));
-        $this->assertEquals('🛢️', HeaterEnum::getEmoji(HeaterEnum::FUEL_OIL_HEATING));
-        $this->assertEquals('⚡', HeaterEnum::getEmoji(HeaterEnum::ELECTRIC_HEATING));
-        $this->assertEquals('🌡️', HeaterEnum::getEmoji(HeaterEnum::HEAT_PUMP_HEATING));
-        $this->assertEquals('🌾', HeaterEnum::getEmoji(HeaterEnum::PELLET_STOVE_HEATING));
-        $this->assertEquals('🌲', HeaterEnum::getEmoji(HeaterEnum::WOOD_STOVE_HEATING));
-        $this->assertEquals('🏢', HeaterEnum::getEmoji(HeaterEnum::DISTRICT_HEATING));
-        $this->assertEquals('❓', HeaterEnum::getEmoji(null));
-        $this->assertEquals('❓', HeaterEnum::getEmoji(999));
+        $this->assertSame('🔥', HeaterEnum::getEmoji(HeaterEnum::GAS_HEATING));
+        $this->assertSame('🛢️', HeaterEnum::getEmoji(HeaterEnum::FUEL_OIL_HEATING));
+        $this->assertSame('⚡', HeaterEnum::getEmoji(HeaterEnum::ELECTRIC_HEATING));
+        $this->assertSame('🌡️', HeaterEnum::getEmoji(HeaterEnum::HEAT_PUMP_HEATING));
+        $this->assertSame('🌾', HeaterEnum::getEmoji(HeaterEnum::PELLET_STOVE_HEATING));
+        $this->assertSame('🌲', HeaterEnum::getEmoji(HeaterEnum::WOOD_STOVE_HEATING));
+        $this->assertSame('🏢', HeaterEnum::getEmoji(HeaterEnum::DISTRICT_HEATING));
+        $this->assertSame('❓', HeaterEnum::getEmoji(null));
+        $this->assertSame('❓', HeaterEnum::getEmoji(999));
     }
 
     public function testToArray(): void
@@ -47,6 +47,6 @@ class HeaterEnumTest extends TestCase
             HeaterEnum::DISTRICT_HEATING,
         ];
 
-        $this->assertEquals($expected, HeaterEnum::toArray());
+        $this->assertSame($expected, HeaterEnum::toArray());
     }
 }

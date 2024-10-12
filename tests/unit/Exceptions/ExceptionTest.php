@@ -2,9 +2,9 @@
 
 declare(strict_types = 1);
 
-namespace Jokod\Impactco2Php\Tests;
+namespace Jokod\Impactco2Php\Tests\Unit\Exceptions;
 
-use Jokod\Impactco2Php\Exception;
+use Jokod\Impactco2Php\Exceptions\Exception;
 use PHPUnit\Framework\TestCase;
 
 class ExceptionTest extends TestCase
@@ -19,14 +19,14 @@ class ExceptionTest extends TestCase
     {
         $message = 'Test exception message';
         $exception = new Exception($message);
-        $this->assertEquals($message, $exception->getMessage());
+        $this->assertSame($message, $exception->getMessage());
     }
 
     public function testExceptionCode(): void
     {
         $code = 123;
         $exception = new Exception('Test exception message', $code);
-        $this->assertEquals($code, $exception->getCode());
+        $this->assertSame($code, $exception->getCode());
     }
 
     public function testExceptionPrevious(): void

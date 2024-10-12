@@ -8,20 +8,21 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface;
 use Jokod\Impactco2Php\Endpoints\Endpoint;
 use Jokod\Impactco2Php\Enum\LanguagesEnum;
+use Jokod\Impactco2Php\Exceptions\Exception;
+use Jokod\Impactco2Php\Exceptions\InvalidArgumentException;
 use Monolog\Handler\StreamHandler as MonologStreamHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 
 class Client
 {
-    const LIBRARY_VERSION = '1.0.0';
     const API_VERSION = 'v1';
     const API_BASE_PATH = 'https://impactco2.fr/api/' . self::API_VERSION . '/';
 
     /**
      * Bearer token.
      */
-    private ?string $apiKey;
+    private ?string $apiKey = null;
 
     private string $language;
 
@@ -45,12 +46,12 @@ class Client
     {
         $this->config = \array_merge([
             'base_path' => self::API_BASE_PATH,
-            'api_key'   => '',
+            'api_key'   => null,
             'language'  => LanguagesEnum::default(),
             'logger'    => null,
         ], $config);
 
-        if (isset($this->config['api_key']) && \is_string($this->config['api_key'])) {
+        if (!\is_null($this->config['api_key']) && \is_string($this->config['api_key'])) {
             $this->setApiKey($this->config['api_key']);
             unset($this->config['api_key']);
         }
@@ -65,6 +66,7 @@ class Client
             unset($this->config['logger']);
         } else {
             $this->setLogger($this->createDefaultLogger());
+            unset($this->config['logger']);
         }
     }
 
@@ -74,26 +76,13 @@ class Client
      * @param Endpoint $endpoint The config of endpoint to call
      * @param string[] $options The options of the request
      *
-     * @return mixed $content
-     * @throws \Exception
+     * @return mixed
      */
     public function execute(Endpoint $endpoint, array $options = [])
     {
         $path = $this->config['base_path'] . $endpoint->getPath($this->getLanguage());
 
-        $options = \array_merge([
-            'headers' => [
-                'Accept'       => 'application/json',
-                'Content-Type' => 'application/json',
-            ],
-        ], $options);
-
-        if (!empty($this->apiKey)) {
-            if (!isset($options['headers']) || !is_array($options['headers'])) {
-                $options['headers'] = [];
-            }
-            $options['headers']['Authorization'] = 'Bearer ' . $this->apiKey;
-        }
+        $options = $this->addOptions($options);
 
         try {
             $response = $this->getHttpClient()->request('GET', $path, $options);
@@ -101,13 +90,11 @@ class Client
 
             if ($response->getStatusCode() !== 200) {
                 $errorMessage = 'Unknown error';
-                if (is_array($content) && isset($content['issues'])) {
-                    $errorMessage = \json_encode($content['issues']);
-                    if (!$errorMessage) {
-                        $errorMessage = 'Unknown error';
-                    }
+                if (is_array($content)) {
+                    $errorMessage = $content['issues'] ?? $errorMessage;
                 }
-                throw new \Exception($errorMessage);
+
+                throw new Exception($errorMessage);
             }
 
             return $content;
@@ -118,37 +105,31 @@ class Client
                 'options'   => $options,
             ]);
 
-            return 'Erreur lors de la requête : ' . $e->getMessage();
+            throw new Exception($e->getMessage());
         }
     }
 
     /**
-     * Create a default HTTP client.
+     * Add options to the request.
      *
-     * @return GuzzleClient
-     */
-    protected function createDefaultHttpClient(): GuzzleClient
-    {
-        $options = [
-            'base_uri'    => $this->config['base_path'],
-            'http_errors' => false,
-        ];
-
-        return new GuzzleClient($options);
-    }
-
-    /**
-     * Create a default logger.
+     * @param string[] $options
      *
-     * @return LoggerInterface
+     * @return array<string, mixed>
      */
-    protected function createDefaultLogger()
+    public function addOptions(array $options): array
     {
-        $logger = new Logger('impactco2-php');
-        $handler = new MonologStreamHandler('php://stderr', Logger::DEBUG);
-        $logger->pushHandler($handler);
+        $options = \array_merge_recursive([
+            'headers' => [
+                'Accept'       => 'application/json',
+                'Content-Type' => 'application/json',
+            ],
+        ], $options);
 
-        return $logger;
+        if (!is_null($this->apiKey)) {
+            $options['headers']['Authorization'] = 'Bearer ' . $this->apiKey;
+        }
+
+        return $options;
     }
 
     /**
@@ -159,8 +140,12 @@ class Client
      *
      * @return void
      */
-    public function setConfig($name, $value): void
+    public function setConfig(string $name, $value): void
     {
+        if (!\is_string($name) || $name === '') {
+            throw new InvalidArgumentException('Invalid configuration name');
+        }
+
         $this->config[$name] = $value;
     }
 
@@ -168,23 +153,12 @@ class Client
      * Get a configuration value.
      *
      * @param string $name
-     * @param mixed $default
      *
      * @return mixed
      */
-    public function getConfig($name, $default = null)
+    public function getConfig($name)
     {
-        return isset($this->config[$name]) ? $this->config[$name] : $default;
-    }
-
-    /**
-     * Get a string containing the version of the library.
-     *
-     * @return string
-     */
-    public function getLibraryVersion(): string
-    {
-        return self::LIBRARY_VERSION;
+        return $this->config[$name] ?? null;
     }
 
     /**
@@ -275,5 +249,34 @@ class Client
     public function getLogger(): LoggerInterface
     {
         return $this->logger;
+    }
+
+    /**
+     * Create a default HTTP client.
+     *
+     * @return GuzzleClient
+     */
+    protected function createDefaultHttpClient(): GuzzleClient
+    {
+        $options = [
+            'base_uri'    => $this->config['base_path'],
+            'http_errors' => false,
+        ];
+
+        return new GuzzleClient($options);
+    }
+
+    /**
+     * Create a default logger.
+     *
+     * @return LoggerInterface
+     */
+    protected function createDefaultLogger()
+    {
+        $logger = new Logger('impactco2-php');
+        $handler = new MonologStreamHandler('php://stderr', Logger::NOTICE);
+        $logger->pushHandler($handler);
+
+        return $logger;
     }
 }

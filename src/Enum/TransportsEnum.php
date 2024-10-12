@@ -4,9 +4,9 @@ namespace Jokod\Impactco2Php\Enum;
 
 class TransportsEnum
 {
-    public const AVION = 1;
+    public const PLANE = 1;
     public const TGV = 2;
-    public const INTERCITES = 3;
+    public const INTERCITY = 3;
     public const CAR = 4;
     public const ELECTRIC_CAR = 5;
     public const BUS = 6;
@@ -37,9 +37,9 @@ class TransportsEnum
      * @var string[] array
      */
     public static $names = [
-        self::AVION                 => 'Avion',
+        self::PLANE                 => 'Avion',
         self::TGV                   => 'TGV',
-        self::INTERCITES            => 'Intercités',
+        self::INTERCITY             => 'Intercités',
         self::CAR                   => 'Voiture',
         self::ELECTRIC_CAR          => 'Voiture électrique',
         self::BUS                   => 'Bus',
@@ -84,11 +84,11 @@ class TransportsEnum
     public static function getEmoji(?int $id): string
     {
         switch ($id) {
-            case self::AVION:
+            case self::PLANE:
                 return '✈️';
             case self::TGV:
                 return '🚄';
-            case self::INTERCITES:
+            case self::INTERCITY:
                 return '🚆';
             case self::CAR:
                 return '🚗';
@@ -147,9 +147,9 @@ class TransportsEnum
     public static function toArray(): array
     {
         return [
-            self::AVION,
+            self::PLANE,
             self::TGV,
-            self::INTERCITES,
+            self::INTERCITY,
             self::CAR,
             self::ELECTRIC_CAR,
             self::BUS,
