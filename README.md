@@ -10,6 +10,12 @@ Retrouvez le projet ainsi que la documentation officielle de l'API ImpactCO2 sur
 
 ## Installation
 
+### Prérequis
+
+- PHP 8.3 ou supérieur
+
+### Composer
+
 Vous pouvez installer cette librairie via Composer. Exécutez la commande suivante :
 
 ```bash
