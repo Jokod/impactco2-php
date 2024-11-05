@@ -1,0 +1,42 @@
+name: E2E Tests
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Tous les jours à minuit
+  workflow_dispatch:  # Permet le déclenchement manuel
+
+jobs:
+  e2e-tests:
+    strategy:
+      matrix:
+        php: ['8.2', '8.3']
+        
+    name: E2E Tests (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: json, mbstring
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Setup retry mechanism
+        run: |
+          composer require --dev "symfony/process"
+          
+      - name: Run E2E Tests with retry
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: vendor/bin/phpunit --group e2e
+        env:
+          IMPACTCO2_API_KEY: ${{ secrets.IMPACTCO2_API_KEY }} 

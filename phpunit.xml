@@ -1,21 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="phpunit.xsd"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="vendor/autoload.php"
-         cacheDirectory=".phpunit.cache"
-         beStrictAboutOutputDuringTests="true"
-         failOnRisky="true" 
-         failOnWarning="true"
-         colors="true">
+         colors="true"
+         verbose="true">
     <testsuites>
-        <testsuite name="tests">
-            <directory>tests</directory>
+        <testsuite name="Unit">
+            <directory>tests/unit</directory>
+        </testsuite>
+        <testsuite name="E2E">
+            <directory>tests/e2e</directory>
         </testsuite>
     </testsuites>
-
-    <source>
+    <coverage>
         <include>
-            <directory>src</directory>
+            <directory suffix=".php">src</directory>
         </include>
-    </source>
+        <exclude>
+            <directory>vendor</directory>
+            <directory>tests</directory>
+        </exclude>
+    </coverage>
+    <groups>
+        <exclude>
+            <group>e2e</group>
+        </exclude>
+    </groups>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+    </php>
 </phpunit>

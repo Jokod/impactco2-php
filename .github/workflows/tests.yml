@@ -1,50 +1,130 @@
-name: Run PHPUnit Tests
+name: Tests & Quality
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
 
 jobs:
-  phpunit:
+  tests:
+    name: Tests PHP ${{ matrix.php }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.0', '8.1', '8.2', '8.3']
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Cache Composer dependencies
-      uses: actions/cache@v3
-      with:
-        path: vendor
-        key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-composer-
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: json, mbstring
+          coverage: xdebug
+          tools: composer:v2
 
-    - name: Set up PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: 8.1
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress --no-suggest
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
 
-    - name: Run PHPUnit
-      run: vendor/bin/phpunit --configuration phpunit.xml
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
 
-  coverage:
+      - name: Run PHP CS Fixer
+        run: vendor/bin/php-cs-fixer fix --dry-run --diff
+
+      - name: Cache PHPStan results
+        uses: actions/cache@v3
+        with:
+          path: tmp/phpstan
+          key: phpstan-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: phpstan-${{ runner.os }}-
+
+      - name: Run PHPStan
+        run: |
+          mkdir -p tmp/phpstan
+          vendor/bin/phpstan analyse src tests --level=max --cache-dir=tmp/phpstan
+
+      - name: Validate PHPDoc
+        run: vendor/bin/phpdoc-checker src/
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit --coverage-text --coverage-clover=coverage.xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+
+  lowest-dependencies:
+    name: Lowest Dependencies PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['7.4']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: json, mbstring
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer update --prefer-lowest --prefer-dist --no-progress
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit
+
+  code-coverage:
+    name: Code Coverage
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.3'
-        coverage: xdebug
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: json, mbstring
+          coverage: pcov
+          tools: composer:v2
 
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress --no-suggest
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
 
-    - name: Run PHPUnit with coverage
-      run: vendor/bin/phpunit --coverage-text --coverage-clover=coverage.xml
+      - name: Generate coverage report
+        run: |
+          vendor/bin/phpunit --coverage-html=coverage --coverage-clover=clover.xml --coverage-text
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./clover.xml
+          fail_ci_if_error: true

@@ -42,6 +42,7 @@ return (new PhpCsFixer\Config())
         'combine_consecutive_unsets' => true,
         'concat_space' => ['spacing' => 'one'],
         'ternary_to_null_coalescing' => true,
+        'no_whitespace_in_blank_line' => true,
     ])
     ->setFinder($finder)
     ->setCacheFile('.php-cs-fixer.cache'); // forward compatibility with 3.x line

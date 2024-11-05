@@ -19,7 +19,7 @@ class HeaterEndpoint extends Endpoint
      */
     public function __construct(?int $surface = null, ?array $types = null)
     {
-        if (!is_null($surface) && $surface < 0) {
+        if (!is_null($surface) && $surface <= 0) {
             throw new InvalidArgumentException('Surface must be a positive integer');
         }
 
@@ -28,10 +28,10 @@ class HeaterEndpoint extends Endpoint
                 throw new InvalidArgumentException('Heating type list cannot be empty');
             }
 
-            foreach ($types as $type) {
-                if (!in_array($type, HeaterEnum::toArray(), true)) {
-                    throw new InvalidArgumentException('Invalid type of heating: ' . $type);
-                }
+            // Vérifier tous les types invalides et les collecter
+            $invalidTypes = array_filter($types, fn($type) => !in_array($type, HeaterEnum::toArray(), true));
+            if (!empty($invalidTypes)) {
+                throw new InvalidArgumentException('Invalid type of heating: ' . implode(', ', $invalidTypes));
             }
 
             $types = implode(',', $types);

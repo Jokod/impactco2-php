@@ -28,10 +28,9 @@ class FruitsVegetables extends Endpoint
                 throw new InvalidArgumentException('Fruits and vegetables category list cannot be empty');
             }
 
-            foreach ($categories as $category) {
-                if (!in_array($category, FoodEnum::toArray(), true)) {
-                    throw new InvalidArgumentException('Invalid category of fruits and vegetables: ' . $category);
-                }
+            $invalidCategories = array_filter($categories, fn($category) => !in_array($category, FoodEnum::toArray(), true));
+            if (!empty($invalidCategories)) {
+                throw new InvalidArgumentException('Invalid category of fruits and vegetables: ' . implode(', ', $invalidCategories));
             }
 
             $categories = implode(',', $categories);

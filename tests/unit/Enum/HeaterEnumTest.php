@@ -48,5 +48,14 @@ class HeaterEnumTest extends TestCase
         ];
 
         $this->assertSame($expected, HeaterEnum::toArray());
+        $this->assertCount(7, HeaterEnum::toArray());
+    }
+
+    public function testAllConstantsHaveNameAndEmoji(): void
+    {
+        foreach (HeaterEnum::toArray() as $value) {
+            $this->assertNotSame('Undefined', HeaterEnum::getName($value));
+            $this->assertNotSame('❓', HeaterEnum::getEmoji($value));
+        }
     }
 }

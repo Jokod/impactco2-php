@@ -18,6 +18,20 @@ class FruitsVegetablesTest extends TestCase
         new FruitsVegetables(13);
     }
 
+    public function testConstructorWithZeroMonth(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Month must be between 1 and 12');
+        new FruitsVegetables(0);
+    }
+
+    public function testConstructorWithNegativeMonth(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Month must be between 1 and 12');
+        new FruitsVegetables(-1);
+    }
+
     public function testConstructorWithEmptyCategories(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -25,11 +39,18 @@ class FruitsVegetablesTest extends TestCase
         new FruitsVegetables(1, []);
     }
 
-    public function testConstructorWithInvalidCategory(): void
+    public function testConstructorWithSingleInvalidCategory(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid category of fruits and vegetables: 999');
         new FruitsVegetables(1, [999]);
+    }
+
+    public function testConstructorWithMultipleInvalidCategories(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid category of fruits and vegetables: 999, 998');
+        new FruitsVegetables(1, [999, 998]);
     }
 
     public function testConstructorWithValidInputs(): void
@@ -39,14 +60,27 @@ class FruitsVegetablesTest extends TestCase
         $endpoint = new FruitsVegetables($month, $categories);
 
         $this->assertInstanceOf(FruitsVegetables::class, $endpoint);
-        $this->assertSame('fruitsetlegumes', $endpoint::ENDPOINT);
     }
 
-    public function testConstructorWithNullInputs(): void
+    public function testGetPathWithAllParameters(): void
+    {
+        $endpoint = new FruitsVegetables(5, [FoodEnum::FRUITS, FoodEnum::VEGETABLES]);
+        $path = $endpoint->getPath('fr');
+
+        $this->assertStringContainsString('fruitsetlegumes', $path);
+        $this->assertStringContainsString('month=5', $path);
+        $this->assertStringContainsString('category=' . FoodEnum::FRUITS . ',' . FoodEnum::VEGETABLES, $path);
+        $this->assertStringContainsString('language=fr', $path);
+    }
+
+    public function testGetPathWithoutOptionalParameters(): void
     {
         $endpoint = new FruitsVegetables();
+        $path = $endpoint->getPath('fr');
 
-        $this->assertInstanceOf(FruitsVegetables::class, $endpoint);
-        $this->assertSame('fruitsetlegumes', $endpoint::ENDPOINT);
+        $this->assertStringContainsString('fruitsetlegumes', $path);
+        $this->assertStringNotContainsString('month=', $path);
+        $this->assertStringNotContainsString('category=', $path);
+        $this->assertStringContainsString('language=fr', $path);
     }
 }

@@ -39,13 +39,17 @@ class TransportEndpoint extends Endpoint
                 throw new InvalidArgumentException('Transport list cannot be empty');
             }
 
-            foreach ($transports as $transport) {
-                if (!in_array($transport, TransportsEnum::toArray(), true)) {
-                    throw new InvalidArgumentException('Invalid transport identifier: ' . $transport);
-                }
+            // Vérifier tous les transports invalides et les collecter
+            $invalidTransports = array_filter($transports, fn($transport) => !in_array($transport, TransportsEnum::toArray(), true));
+            if (!empty($invalidTransports)) {
+                throw new InvalidArgumentException('Invalid transport identifier: ' . implode(', ', $invalidTransports));
             }
 
             $transports = implode(',', $transports);
+        }
+
+        if ($occupencyRate < 0) {
+            throw new InvalidArgumentException('Occupency rate must be a positive integer');
         }
 
         if (!in_array($ignoreRadiativeForcing, [0, 1], true)) {

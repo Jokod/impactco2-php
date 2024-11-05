@@ -4,33 +4,28 @@ declare(strict_types = 1);
 
 namespace Jokod\Impactco2Php\Endpoints;
 
-use Jokod\Impactco2Php\Enum\LanguagesEnum;
 use Jokod\Impactco2Php\Interfaces\EndpointInterface;
-use Jokod\Impactco2Php\Exceptions\InvalidArgumentException;
 
-class Endpoint implements EndpointInterface
+abstract class Endpoint implements EndpointInterface
 {
     /**
-     * @param string $endpoint File of the endpoint
-     * @param mixed[] $params Parameters of the endpoint (ex: /{param})
-     * @param mixed[] $query Query parameters of the endpoint (ex: ?param=value)
+     * @param string $endpoint Nom du endpoint
+     * @param array<string, mixed> $params Paramètres du endpoint (ex: /{param})
+     * @param array<string, mixed> $query Paramètres de requête (ex: ?param=value)
      */
-    public function __construct(private string $endpoint, private array $params = [], private array $query = [])
-    {
+    public function __construct(
+        protected string $endpoint,
+        protected array $params = [],
+        protected array $query = []
+    ) {
     }
 
-    /**
-     * Get the path of the endpoint
-     * 
-     * @param string $language Language of the endpoint
-     * @return string
-     */
     public function getPath(string $language): string
     {
+        $path = $this->endpoint;
+
         if (!empty($this->params)) {
-            foreach ($this->params as $param) {
-                $this->endpoint .= '/' . $param;
-            }
+            $path .= '/' . implode('/', $this->params);
         }
 
         if (!empty($this->query)) {
@@ -38,9 +33,36 @@ class Endpoint implements EndpointInterface
                 $this->query['language'] = $language;
             }
 
-            $this->endpoint .= '?' . http_build_query($this->query);
+            // Filtrer les valeurs null et encoder correctement les paramètres
+            $queryParams = array_filter($this->query, function ($value) {
+                return $value !== null;
+            });
+
+            if (!empty($queryParams)) {
+                $queryString = http_build_query($this->processQueryValues($queryParams));
+                $path .= '?' . str_replace(['%2C', '%5B0%5D'], [',', ''], $queryString);
+            }
         }
 
-        return $this->endpoint;
+        return $path;
+    }
+
+    /**
+     * Traite les valeurs des paramètres de requête pour gérer les tableaux
+     *
+     * @param array<string, mixed> $params
+     * @return array<string, mixed>
+     */
+    private function processQueryValues(array $params): array
+    {
+        $result = [];
+        foreach ($params as $key => $value) {
+            if (is_array($value)) {
+                $result[$key] = implode(',', $value);
+            } else {
+                $result[$key] = $value;
+            }
+        }
+        return $result;
     }
 }

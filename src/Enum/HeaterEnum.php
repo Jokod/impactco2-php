@@ -2,7 +2,7 @@
 
 namespace Jokod\Impactco2Php\Enum;
 
-class HeaterEnum
+class HeaterEnum extends AbstractEnum
 {
     public const GAS_HEATING = 1;
     public const FUEL_OIL_HEATING = 2;
@@ -12,12 +12,7 @@ class HeaterEnum
     public const WOOD_STOVE_HEATING = 6;
     public const DISTRICT_HEATING = 7;
 
-    /**
-     * List of names for each type
-     *
-     * @var string[] array
-     */
-    public static $names = [
+    protected static array $names = [
         self::GAS_HEATING          => 'Chauffage au gaz',
         self::FUEL_OIL_HEATING     => 'Chauffage au fioul',
         self::ELECTRIC_HEATING     => 'Chauffage électrique',
@@ -27,47 +22,16 @@ class HeaterEnum
         self::DISTRICT_HEATING     => 'Chauffage via un réseau de chaleur',
     ];
 
-    public static function getName(?int $id): string
-    {
-        if (!isset(self::$names[$id])) {
-            return 'Undefined';
-        }
+    protected static array $emojis = [
+        self::GAS_HEATING => '🔥',
+        self::FUEL_OIL_HEATING => '🛢️',
+        self::ELECTRIC_HEATING => '⚡',
+        self::HEAT_PUMP_HEATING => '🌡️',
+        self::PELLET_STOVE_HEATING => '🌾',
+        self::WOOD_STOVE_HEATING => '🌲',
+        self::DISTRICT_HEATING => '🏢',
+    ];
 
-        return self::$names[$id];
-    }
-
-    /**
-     * Get the emoji for a type
-     *
-     * @param int|null $id
-     *
-     * @return string
-     */
-    public static function getEmoji(?int $id): string
-    {
-        switch ($id) {
-            case self::GAS_HEATING:
-                return '🔥';
-            case self::FUEL_OIL_HEATING:
-                return '🛢️';
-            case self::ELECTRIC_HEATING:
-                return '⚡';
-            case self::HEAT_PUMP_HEATING:
-                return '🌡️';
-            case self::PELLET_STOVE_HEATING:
-                return '🌾';
-            case self::WOOD_STOVE_HEATING:
-                return '🌲';
-            case self::DISTRICT_HEATING:
-                return '🏢';
-            default:
-                return '❓';
-        }
-    }
-
-    /**
-     * @return int[] array of types
-     */
     public static function toArray(): array
     {
         return [

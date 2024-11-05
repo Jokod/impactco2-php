@@ -5,166 +5,94 @@ declare(strict_types = 1);
 namespace Jokod\Impactco2Php;
 
 use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\ClientInterface;
+use GuzzleHttp\ClientInterface as GuzzleClientInterface;
 use Jokod\Impactco2Php\Endpoints\Endpoint;
 use Jokod\Impactco2Php\Enum\LanguagesEnum;
-use Jokod\Impactco2Php\Exceptions\Exception;
+use Jokod\Impactco2Php\Exceptions\ApiException;
 use Jokod\Impactco2Php\Exceptions\InvalidArgumentException;
-use Monolog\Handler\StreamHandler as MonologStreamHandler;
+use Jokod\Impactco2Php\Interfaces\ClientInterface;
+use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 
-class Client
+/**
+ * Client principal pour l'API Impact CO2.
+ *
+ * Cette classe gère les appels à l'API Impact CO2 et fournit une interface
+ * pour accéder aux différents endpoints.
+ *
+ * @author Jordan SAMOUH <jordansamouh@gmail.com>
+ */
+final class Client implements ClientInterface
 {
-    const API_VERSION = 'v1';
-    const API_BASE_PATH = 'https://impactco2.fr/api/' . self::API_VERSION . '/';
+    private const API_VERSION = 'v1';
+    private const API_BASE_PATH = 'https://impactco2.fr/api/' . self::API_VERSION . '/';
+    private const DEFAULT_HEADERS = [
+        'Accept' => 'application/json',
+        'Content-Type' => 'application/json',
+    ];
 
-    /**
-     * Bearer token.
-     */
     private ?string $apiKey = null;
-
     private string $language;
-
-    /**
-     * Configuration.
-     *
-     * @var mixed[] $config
-     */
     private array $config;
-
-    private ClientInterface $httpClient;
-
-    private LoggerInterface $logger;
+    private ?GuzzleClientInterface $httpClient = null;
+    private ?LoggerInterface $logger = null;
 
     /**
-     * Constructor.
+     * Constructeur du client Impact CO2.
      *
-     * @param mixed[] $config
+     * @param array<string, mixed> $config Configuration du client
+     *                                     - api_key: (string|null) Clé API pour l'authentification
+     *                                     - language: (string) Langue par défaut (fr, en, es, de)
+     *                                     - logger: (LoggerInterface|null) Logger personnalisé
+     *                                     - base_path: (string) URL de base de l'API
      */
     public function __construct(array $config = [])
     {
-        $this->config = \array_merge([
-            'base_path' => self::API_BASE_PATH,
-            'api_key'   => null,
-            'language'  => LanguagesEnum::default(),
-            'logger'    => null,
-        ], $config);
-
-        if (!\is_null($this->config['api_key']) && \is_string($this->config['api_key'])) {
-            $this->setApiKey($this->config['api_key']);
-            unset($this->config['api_key']);
-        }
-
-        if (!\is_null($this->config['language'])) {
-            $this->setLanguage($this->config['language']);
-            unset($this->config['language']);
-        }
-
-        if (!is_null($this->config['logger'])) {
-            $this->setLogger($this->config['logger']);
-            unset($this->config['logger']);
-        } else {
-            $this->setLogger($this->createDefaultLogger());
-            unset($this->config['logger']);
-        }
+        $this->initializeConfig($config);
+        $this->initializeApiKey();
+        $this->initializeLanguage();
+        $this->initializeLogger();
     }
 
     /**
-     * Call the endpoint of the API
+     * Exécute une requête vers l'API.
      *
-     * @param Endpoint $endpoint The config of endpoint to call
-     * @param string[] $options The options of the request
+     * @param Endpoint $endpoint Point d'entrée de l'API à appeler
+     * @param array<string, mixed> $options Options supplémentaires pour la requête
      *
-     * @return mixed
+     * @throws ApiException Si une erreur survient lors de l'appel API
+     * @return array<string, mixed> Réponse de l'API
      */
-    public function execute(Endpoint $endpoint, array $options = [])
+    public function execute(Endpoint $endpoint, array $options = []): array
     {
-        $path = $this->config['base_path'] . $endpoint->getPath($this->getLanguage());
-
-        $options = $this->addOptions($options);
-
         try {
-            $response = $this->getHttpClient()->request('GET', $path, $options);
-            $content = json_decode($response->getBody()->getContents(), true);
+            $response = $this->getHttpClient()->request(
+                'GET',
+                $this->buildPath($endpoint),
+                $this->buildOptions($options)
+            );
+
+            $content = $this->parseResponse($response);
 
             if ($response->getStatusCode() !== 200) {
-                $errorMessage = 'Unknown error';
-                if (is_array($content)) {
-                    $errorMessage = $content['issues'] ?? $errorMessage;
-                }
-
-                throw new Exception($errorMessage);
+                throw new ApiException(
+                    $content['issues'] ?? 'Unknown error',
+                    ['response' => $content]
+                );
             }
 
             return $content;
-        } catch (\Exception $e) {
-            $this->getLogger()->error('Error during request', [
-                'exception' => $e,
-                'endpoint'  => $endpoint,
-                'options'   => $options,
-            ]);
-
-            throw new Exception($e->getMessage());
+        } catch (\Throwable $e) {
+            $this->logError($e, $endpoint, $options);
+            throw new ApiException($e->getMessage(), [], $e->getCode());
         }
     }
 
     /**
-     * Add options to the request.
+     * Définit la clé API pour l'authentification.
      *
-     * @param string[] $options
-     *
-     * @return array<string, mixed>
-     */
-    public function addOptions(array $options): array
-    {
-        $options = \array_merge_recursive([
-            'headers' => [
-                'Accept'       => 'application/json',
-                'Content-Type' => 'application/json',
-            ],
-        ], $options);
-
-        if (!is_null($this->apiKey)) {
-            $options['headers']['Authorization'] = 'Bearer ' . $this->apiKey;
-        }
-
-        return $options;
-    }
-
-    /**
-     * Set a configuration value.
-     *
-     * @param string $name
-     * @param mixed $value
-     *
-     * @return void
-     */
-    public function setConfig(string $name, $value): void
-    {
-        if (!\is_string($name) || $name === '') {
-            throw new InvalidArgumentException('Invalid configuration name');
-        }
-
-        $this->config[$name] = $value;
-    }
-
-    /**
-     * Get a configuration value.
-     *
-     * @param string $name
-     *
-     * @return mixed
-     */
-    public function getConfig($name)
-    {
-        return $this->config[$name] ?? null;
-    }
-
-    /**
-     * Set the API key.
-     *
-     * @param string $apiKey
+     * @param string $apiKey Clé API
      */
     public function setApiKey(string $apiKey): void
     {
@@ -172,9 +100,9 @@ class Client
     }
 
     /**
-     * Get the API key.
+     * Récupère la clé API actuelle.
      *
-     * @return string|null
+     * @return string|null Clé API ou null si non définie
      */
     public function getApiKey(): ?string
     {
@@ -182,101 +110,162 @@ class Client
     }
 
     /**
-     * Set the language.
+     * Définit la langue pour les requêtes.
      *
-     * @param string $language
+     * @param string $language Code de langue (fr, en, es, de)
+     * @throws InvalidArgumentException Si la langue n'est pas supportée
      */
     public function setLanguage(string $language): void
     {
-        if (!\in_array($language, LanguagesEnum::toArray(), true)) {
-            throw new Exception('Invalid language');
+        if (!in_array($language, LanguagesEnum::toArray(), true)) {
+            throw new InvalidArgumentException('Invalid language');
         }
-
         $this->language = $language;
     }
 
-    /**
-     * Get the language.
-     *
-     * @return string
-     */
     public function getLanguage(): string
     {
         return $this->language;
     }
 
-    /**
-     * Set the HTTP client.
-     *
-     * @param ClientInterface $httpClient
-     *
-     * @return void
-     */
-    public function setHttpClient(ClientInterface $httpClient): void
+    public function setHttpClient(GuzzleClientInterface $client): void
     {
-        $this->httpClient = $httpClient;
+        $this->httpClient = $client;
     }
 
-    /**
-     * Get the HTTP client.
-     *
-     * @return ClientInterface
-     */
-    public function getHttpClient(): ClientInterface
+    public function getHttpClient(): GuzzleClientInterface
     {
-        if (!isset($this->httpClient)) {
+        if ($this->httpClient === null) {
             $this->httpClient = $this->createDefaultHttpClient();
         }
-
         return $this->httpClient;
     }
 
-    /**
-     * Set a logger.
-     *
-     * @param LoggerInterface $logger
-     */
     public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
     }
 
-    /**
-     * Get the logger.
-     *
-     * @return LoggerInterface
-     */
     public function getLogger(): LoggerInterface
     {
+        if ($this->logger === null) {
+            $this->logger = $this->createDefaultLogger();
+        }
         return $this->logger;
     }
 
     /**
-     * Create a default HTTP client.
+     * Initialise la configuration du client.
      *
-     * @return GuzzleClient
+     * @param array<string, mixed> $config Configuration fournie
      */
-    protected function createDefaultHttpClient(): GuzzleClient
+    private function initializeConfig(array $config): void
     {
-        $options = [
-            'base_uri'    => $this->config['base_path'],
-            'http_errors' => false,
-        ];
-
-        return new GuzzleClient($options);
+        $this->config = array_merge([
+            'base_path' => self::API_BASE_PATH,
+            'api_key' => null,
+            'language' => LanguagesEnum::default(),
+            'logger' => null,
+        ], $config);
     }
 
     /**
-     * Create a default logger.
-     *
-     * @return LoggerInterface
+     * Initialise la clé API pour l'authentification.
      */
-    protected function createDefaultLogger()
+    private function initializeApiKey(): void
+    {
+        if (isset($this->config['api_key']) && is_string($this->config['api_key'])) {
+            $this->setApiKey($this->config['api_key']);
+        }
+    }
+
+    /**
+     * Initialise la langue pour les requêtes.
+     */
+    private function initializeLanguage(): void
+    {
+        if (isset($this->config['language'])) {
+            $this->setLanguage($this->config['language']);
+        }
+    }
+
+    /**
+     * Initialise le logger personnalisé.
+     */
+    private function initializeLogger(): void
+    {
+        $this->logger = $this->config['logger'] instanceof LoggerInterface 
+            ? $this->config['logger'] 
+            : $this->createDefaultLogger();
+    }
+
+    /**
+     * Construit le chemin complet pour une requête API.
+     *
+     * @param Endpoint $endpoint Point d'entrée de l'API
+     * @return string Chemin complet de la requête
+     */
+    private function buildPath(Endpoint $endpoint): string
+    {
+        return $this->config['base_path'] . $endpoint->getPath($this->getLanguage());
+    }
+
+    /**
+     * Construit les options pour la requête HTTP.
+     *
+     * @param array<string, mixed> $options Options supplémentaires
+     * @return array<string, mixed> Options complètes pour la requête
+     */
+    private function buildOptions(array $options): array
+    {
+        $headers = self::DEFAULT_HEADERS;
+
+        if ($this->apiKey !== null) {
+            $headers['Authorization'] = 'Bearer ' . $this->apiKey;
+        }
+
+        return array_merge_recursive(['headers' => $headers], $options);
+    }
+
+    /**
+     * Parse la réponse HTTP en tableau.
+     *
+     * @param mixed $response Réponse HTTP
+     * @return array<string, mixed> Contenu de la réponse
+     */
+    private function parseResponse($response): array
+    {
+        return json_decode($response->getBody()->getContents(), true) ?? [];
+    }
+
+    /**
+     * Journalise une erreur survenue lors d'une requête.
+     *
+     * @param \Throwable $e Exception survenue
+     * @param Endpoint $endpoint Point d'entrée concerné
+     * @param array<string, mixed> $options Options de la requête
+     */
+    private function logError(\Throwable $e, Endpoint $endpoint, array $options): void
+    {
+        $this->getLogger()->error('API request failed', [
+            'exception' => $e,
+            'endpoint' => $endpoint,
+            'options' => $options,
+        ]);
+    }
+
+    private function createDefaultHttpClient(): GuzzleClient
+    {
+        return new GuzzleClient([
+            'base_uri' => $this->config['base_path'],
+            'http_errors' => false,
+        ]);
+    }
+
+    private function createDefaultLogger(): LoggerInterface
     {
         $logger = new Logger('impactco2-php');
-        $handler = new MonologStreamHandler('php://stderr', Logger::NOTICE);
-        $logger->pushHandler($handler);
-
+        $logger->pushHandler(new StreamHandler('php://stderr', Logger::NOTICE));
         return $logger;
     }
 }
