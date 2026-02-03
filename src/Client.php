@@ -6,6 +6,7 @@ namespace Jokod\Impactco2Php;
 
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface;
+use Jokod\Impactco2Php\ApiResponse;
 use Jokod\Impactco2Php\Endpoints\Endpoint;
 use Jokod\Impactco2Php\Enum\LanguagesEnum;
 use Jokod\Impactco2Php\Exceptions\Exception;
@@ -76,9 +77,9 @@ class Client
      * @param Endpoint $endpoint The config of endpoint to call
      * @param string[] $options The options of the request
      *
-     * @return mixed
+     * @return ApiResponse Réponse normalisée (données hydratées en objets de la librairie)
      */
-    public function execute(Endpoint $endpoint, array $options = [])
+    public function execute(Endpoint $endpoint, array $options = []): ApiResponse
     {
         $path = $this->config['base_path'] . $endpoint->getPath($this->getLanguage());
 
@@ -97,7 +98,7 @@ class Client
                 throw new Exception($errorMessage);
             }
 
-            return $content;
+            return $endpoint->transformResponse(\is_array($content) ? $content : []);
         } catch (\Exception $e) {
             $this->getLogger()->error('Error during request', [
                 'exception' => $e,

@@ -3,6 +3,7 @@
 namespace Jokod\Impactco2Php\Tests\Unit;
 
 use GuzzleHttp\ClientInterface;
+use Jokod\Impactco2Php\ApiResponse;
 use Jokod\Impactco2Php\Client;
 use Jokod\Impactco2Php\Endpoints\Endpoint;
 use Jokod\Impactco2Php\Enum\LanguagesEnum;
@@ -113,6 +114,9 @@ class ClientTest extends TestCase
     {
         $endpoint = $this->createMock(Endpoint::class);
         $endpoint->method('getPath')->willReturn('test_path');
+        $endpoint->method('transformResponse')->willReturnCallback(
+            static fn (array $raw): ApiResponse => new ApiResponse($raw['data'] ?? null, $raw['warning'] ?? null)
+        );
 
         $responseBody = $this->createMock(StreamInterface::class);
         $responseBody->method('getContents')->willReturn(json_encode(['data' => 'test']));
@@ -130,7 +134,9 @@ class ClientTest extends TestCase
 
         /** @var Endpoint $endpoint */
         $result = $client->execute($endpoint);
-        $this->assertSame(['data' => 'test'], $result);
+        $this->assertInstanceOf(ApiResponse::class, $result);
+        $this->assertSame('test', $result->getData());
+        $this->assertNull($result->getWarning());
     }
 
     public function testExecuteError(): void

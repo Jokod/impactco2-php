@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Jokod\Impactco2Php\Endpoints;
 
+use Jokod\Impactco2Php\ApiResponse;
 use Jokod\Impactco2Php\Interfaces\EndpointInterface;
 
 class Endpoint implements EndpointInterface
@@ -48,5 +49,20 @@ class Endpoint implements EndpointInterface
         }
 
         return $path;
+    }
+
+    /**
+     * Transforme la réponse brute de l'API en ApiResponse.
+     * Les sous-classes peuvent surcharger pour hydrater les données en objets de la librairie.
+     *
+     * @param array<string, mixed> $raw Réponse JSON décodée (clés data, warning)
+     * @return ApiResponse
+     */
+    public function transformResponse(array $raw): ApiResponse
+    {
+        return new ApiResponse(
+            $raw['data'] ?? [],
+            isset($raw['warning']) && \is_string($raw['warning']) ? $raw['warning'] : null
+        );
     }
 }
