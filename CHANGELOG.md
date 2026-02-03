@@ -2,6 +2,18 @@
 
 Tous les changements notables de ce projet sont documentés dans ce fichier.
 
+## [1.2.2] - 2026-02-03
+
+### Modifié
+
+- **ThematicsEcvEndpoint::transformResponse()** : prise en charge des réponses API en liste (tableau indexé) ; si `data` est une liste, retourne un tableau d'objets `ECV[]`, sinon un seul `ECV`. Gestion explicite de `data` vide ou non-tableau (retour des données brutes).
+
+### Ajouté
+
+- **Tests** : `testTransformResponseWithListDataReturnsArrayOfEcv` dans `ThematicsEcvEndpointTest`.
+
+[1.2.2]: https://github.com/jokod/impactco2-php/compare/v1.2.1...v1.2.2
+
 ## [1.2.1] - 2026-02-03
 
 ### Modifié
