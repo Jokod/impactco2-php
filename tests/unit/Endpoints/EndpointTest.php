@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Jokod\Impactco2Php\Endpoints;
 
+use Jokod\Impactco2Php\ApiResponse;
 use PHPUnit\Framework\TestCase;
 
 class EndpointTest extends TestCase
@@ -41,5 +42,26 @@ class EndpointTest extends TestCase
         $endpoint = new Endpoint('base/endpoint', [], ['language' => 'fr']);
         $result = $endpoint->getPath('en');
         $this->assertSame('base/endpoint?language=en', $result);
+    }
+
+    public function testTransformResponseReturnsApiResponseWithDataAndWarning(): void
+    {
+        $endpoint = new Endpoint('base/endpoint');
+        $raw = ['data' => [1, 2, 3], 'warning' => 'Message'];
+        $response = $endpoint->transformResponse($raw);
+
+        $this->assertInstanceOf(ApiResponse::class, $response);
+        $this->assertSame([1, 2, 3], $response->getData());
+        $this->assertSame('Message', $response->getWarning());
+    }
+
+    public function testTransformResponseWithMissingKeys(): void
+    {
+        $endpoint = new Endpoint('base/endpoint');
+        $response = $endpoint->transformResponse([]);
+
+        $this->assertInstanceOf(ApiResponse::class, $response);
+        $this->assertSame([], $response->getData());
+        $this->assertNull($response->getWarning());
     }
 }

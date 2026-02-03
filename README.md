@@ -60,7 +60,10 @@ $client = new Client();
 $endpoint = new TransportEndpoint(100, [TransportsEnum::CAR]);
 $result = $client->execute($endpoint);
 
-print_r($result);
+// $result est une ApiResponse : getData() retourne les données (objets de la librairie), getWarning() un éventuel avertissement
+foreach ($result->getData() as $transport) {
+    echo $transport->getName() . ' : ' . $transport->getValue() . ' kg CO2e' . PHP_EOL;
+}
 ```
 
 ## 📚 Utilisation détaillée
@@ -84,8 +87,12 @@ $client = new Client([
 | Option | Type | Défaut | Description |
 |--------|------|--------|-------------|
 | `api_key` | `string\|null` | `null` | Clé API (si requis par l'API) |
-| `language` | `string` | `'fr'` | Langue des résultats (fr, en, es, de) |
+| `language` | `string` | `'fr'` | Langue des résultats. Valeurs : `fr`, `en`, `es`, `de` (minuscules) ou constantes `LanguagesEnum::FR`, `LanguagesEnum::EN`, etc. |
 | `logger` | `LoggerInterface\|null` | Logger par défaut | Logger personnalisé PSR-3 |
+
+**Format des réponses :** `execute()` retourne toujours une `ApiResponse` avec :
+- `getData()` : les données (objets de la librairie selon l'endpoint : `Thematic[]`, `Transport[]`, `ECV`, ou tableau brut pour Alimentation, Chauffage, Fruits et légumes)
+- `getWarning()` : message d'avertissement éventuel renvoyé par l'API (`null` si absent)
 
 ### 1. Transport
 
@@ -109,6 +116,7 @@ $endpoint = new TransportEndpoint(
 );
 
 $result = $client->execute($endpoint);
+// $result->getData() : tableau d'objets Transport
 ```
 
 #### Exemple avancé avec toutes les options
@@ -175,6 +183,7 @@ $endpoint = new HeaterEndpoint(
 );
 
 $result = $client->execute($endpoint);
+// $result->getData() : tableau brut (structure renvoyée par l'API)
 ```
 
 #### Types de chauffage disponibles
@@ -207,6 +216,7 @@ $endpoint = new FruitsVegetables(
 );
 
 $result = $client->execute($endpoint);
+// $result->getData() : tableau brut (fruits et légumes du mois)
 ```
 
 #### Catégories disponibles
@@ -222,17 +232,20 @@ FoodEnum::NUTS_SEEDS                 // Fruits à coque et graines
 
 ### 4. Thématiques
 
-Listez toutes les thématiques disponibles dans l'API.
+Listez toutes les thématiques disponibles dans l'API. Les données sont retournées sous forme d'objets `Thematic`.
 
 ```php
 use Jokod\Impactco2Php\Endpoints\ThematicsEndpoint;
 
 $endpoint = new ThematicsEndpoint();
-$thematics = $client->execute($endpoint);
+$result = $client->execute($endpoint);
 
-// Parcourir les thématiques
-foreach ($thematics as $thematic) {
-    echo $thematic['name'] . PHP_EOL;
+// Parcourir les thématiques (objets de la librairie)
+foreach ($result->getData() as $thematic) {
+    echo $thematic->getName() . PHP_EOL;
+}
+if ($result->getWarning() !== null) {
+    echo 'Avertissement : ' . $result->getWarning();
 }
 ```
 
@@ -251,6 +264,7 @@ $endpoint = new ThematicsEcvEndpoint(
 );
 
 $result = $client->execute($endpoint);
+// $result->getData() : un objet ECV (détail de la thématique)
 ```
 
 #### Thématiques disponibles
@@ -288,6 +302,7 @@ $result = $client->execute($endpoint);
 // Les 10 aliments les plus consommés en France
 $endpoint = new AlimentationEndpoint(AlimentationCategoryEnum::POPULARITY);
 $result = $client->execute($endpoint);
+// $result->getData() : tableau brut selon la catégorie
 ```
 
 #### Catégories disponibles
@@ -303,19 +318,24 @@ AlimentationCategoryEnum::POPULARITY     // Aliments les plus consommés
 La librairie utilise des exceptions pour gérer les erreurs :
 
 ```php
+use Jokod\Impactco2Php\Endpoints\TransportEndpoint;
+use Jokod\Impactco2Php\Enum\TransportsEnum;
 use Jokod\Impactco2Php\Exceptions\InvalidArgumentException;
-use Jokod\Impactco2Php\Exceptions\Exception;
+use Jokod\Impactco2Php\Exceptions\Exception as Impactco2Exception;
 
+// Validation des paramètres (ex. distance négative)
 try {
-    // Distance négative = exception
     $endpoint = new TransportEndpoint(-100);
 } catch (InvalidArgumentException $e) {
     echo "Paramètre invalide : " . $e->getMessage();
+    return;
 }
 
+// Appel API avec un endpoint valide
+$endpoint = new TransportEndpoint(100, [TransportsEnum::CAR]);
 try {
     $result = $client->execute($endpoint);
-} catch (Exception $e) {
+} catch (Impactco2Exception $e) {
     echo "Erreur API : " . $e->getMessage();
 }
 ```
@@ -323,7 +343,7 @@ try {
 **Types d'exceptions :**
 
 - `InvalidArgumentException` : Paramètres invalides (distance négative, enum inconnu, etc.)
-- `Exception` : Erreurs de communication avec l'API
+- `Jokod\Impactco2Php\Exceptions\Exception` : Erreurs de communication avec l'API (à ne pas confondre avec `\Exception` native PHP ; utiliser un alias comme `Impactco2Exception` pour plus de clarté)
 
 ## 🧪 Tests
 
@@ -341,8 +361,6 @@ composer test
 # Avec couverture de code
 composer test-coverage
 ```
-
-La librairie dispose de **126 tests** couvrant tous les endpoints et cas d'usage.
 
 ## 🛠️ Contribuer
 

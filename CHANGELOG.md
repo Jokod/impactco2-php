@@ -2,6 +2,21 @@
 
 Tous les changements notables de ce projet sont documentés dans ce fichier.
 
+## [1.2.0] - 2026-02-03
+
+### Ajouté
+
+- **ApiResponse** : objet de réponse normalisé avec `getData()` (données hydratées en objets de la librairie) et `getWarning()` (message d'avertissement éventuel).
+- **Endpoint::transformResponse()** : méthode pour convertir la réponse API en `ApiResponse`, surchargée dans `ThematicsEndpoint`, `TransportEndpoint` et `ThematicsEcvEndpoint` pour retourner des objets de la librairie.
+- **Tests** : `ApiResponseTest`, tests de `transformResponse` dans `EndpointTest` et `ThematicsEndpointTest`.
+
+### Modifié
+
+- **Client::execute()** : retourne désormais une `ApiResponse` (au lieu du tableau brut) ; la réponse est transformée via `$endpoint->transformResponse()`. Les endpoints Thématiques, Transport et Détail thématique (ECV) hydratent automatiquement les données en `Thematic[]`, `Transport[]` et `ECV`.
+- **README** : exemples avec `$result->getData()` et `$result->getWarning()` ; format des réponses documenté ; gestion des erreurs corrigée (variable `$endpoint` définie, alias `Impactco2Exception`) ; valeurs de `language` précisées (minuscules / constantes).
+
+[1.2.0]: https://github.com/jokod/impactco2-php/compare/v1.1.0...v1.2.0
+
 ## [1.1.0] - 2025-02-03
 
 ### Ajouté
