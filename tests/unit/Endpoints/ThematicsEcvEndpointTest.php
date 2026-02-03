@@ -102,4 +102,43 @@ class ThematicsEcvEndpointTest extends TestCase
         $this->assertSame([], $response->getData());
         $this->assertNull($response->getWarning());
     }
+
+    public function testTransformResponseWithListDataReturnsArrayOfEcv(): void
+    {
+        $endpoint = new ThematicsEcvEndpoint(ThematicEnum::FURNITURE);
+        $raw = [
+            'data' => [
+                [
+                    'name'      => 'Meubles',
+                    'ecv'       => 100.5,
+                    'slug'      => 'meubles',
+                    'footprint' => 95.2,
+                    'items'     => [],
+                    'usage'     => ['perYear' => 1.0, 'defaultYears' => 10],
+                    'endOfLife' => 5.3,
+                ],
+                [
+                    'name'      => 'Transport',
+                    'ecv'       => 50.0,
+                    'slug'      => 'transport',
+                    'footprint' => 48.0,
+                    'items'     => [],
+                    'usage'     => ['perYear' => 0.0, 'defaultYears' => 1],
+                    'endOfLife' => 2.0,
+                ],
+            ],
+            'warning' => null,
+        ];
+        $response = $endpoint->transformResponse($raw);
+
+        $data = $response->getData();
+        $this->assertIsArray($data);
+        $this->assertCount(2, $data);
+        $this->assertInstanceOf(ECV::class, $data[0]);
+        $this->assertInstanceOf(ECV::class, $data[1]);
+        $this->assertSame('Meubles', $data[0]->getName());
+        $this->assertSame('meubles', $data[0]->getSlug());
+        $this->assertSame('Transport', $data[1]->getName());
+        $this->assertSame('transport', $data[1]->getSlug());
+    }
 }

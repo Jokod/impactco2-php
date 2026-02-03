@@ -39,7 +39,19 @@ class ThematicsEcvEndpoint extends Endpoint
     public function transformResponse(array $raw): ApiResponse
     {
         $data = $raw['data'] ?? [];
-        $ecv = \is_array($data) && $data !== [] ? ECV::fromArray($data) : $data;
+        if (!\is_array($data) || $data === []) {
+            return new ApiResponse(
+                $data,
+                isset($raw['warning']) && \is_string($raw['warning']) ? $raw['warning'] : null
+            );
+        }
+
+        $isList = array_keys($data) === array_keys(array_values($data));
+        if ($isList) {
+            $ecv = array_map(fn (array $item): ECV => ECV::fromArray($item), $data);
+        } else {
+            $ecv = ECV::fromArray($data);
+        }
 
         return new ApiResponse(
             $ecv,
