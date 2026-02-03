@@ -155,14 +155,20 @@ final readonly class ECV
             ? Usage::fromArray($usageData)
             : new Usage(0.0, 1);
 
-        $name = $data['name'] ?? '';
+        $slug = trim((string) ($data['slug'] ?? ''));
+        if ($slug === '') {
+            $slug = 'ecv';
+        }
+        $name = trim((string) ($data['name'] ?? ''));
+        if ($name === '') {
+            $name = $slug !== 'ecv' ? $slug : '—';
+        }
         $ecv = $data['ecv'] ?? 0.0;
-        $slug = $data['slug'] ?? '';
         $footprint = $data['footprint'] ?? 0.0;
         $endOfLife = $data['endOfLife'] ?? 0.0;
 
         return new self(
-            name: (string) $name,
+            name: $name,
             ecv: (float) $ecv,
             slug: (string) $slug,
             footprint: (float) $footprint,

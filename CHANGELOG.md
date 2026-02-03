@@ -2,6 +2,18 @@
 
 Tous les changements notables de ce projet sont documentés dans ce fichier.
 
+## [1.2.1] - 2026-02-03
+
+### Modifié
+
+- **ECV::fromArray()** : parsing assoupli pour les réponses API sans champ `name` ou `slug` ; utilisation du slug comme nom de repli, ou valeurs par défaut (`'ecv'`, `'—'`) pour éviter « ECV name cannot be empty » lorsque l'API `/thematiques/ecv/{id}` renvoie une structure incomplète.
+
+### Ajouté
+
+- **Tests** : tests de `transformResponse` dans `TransportEndpointTest`, `ThematicsEcvEndpointTest` ; tests ECV `fromArray` sans `name`/`slug` dans `ECVTest`.
+
+[1.2.1]: https://github.com/jokod/impactco2-php/compare/v1.2.0...v1.2.1
+
 ## [1.2.0] - 2026-02-03
 
 ### Ajouté

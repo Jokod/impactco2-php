@@ -260,6 +260,35 @@ class ECVTest extends TestCase
         $this->assertSame('Product', $ecv->getName());
     }
 
+    public function testFromArrayWithMissingNameUsesSlug(): void
+    {
+        $data = [
+            'ecv'       => 50.0,
+            'slug'      => 'mobilier',
+            'footprint' => 48.0,
+            'items'     => [],
+            'usage'     => ['perYear' => 0.0, 'defaultYears' => 1],
+            'endOfLife' => 2.0,
+        ];
+        $ecv = ECV::fromArray($data);
+        $this->assertSame('mobilier', $ecv->getName());
+        $this->assertSame('mobilier', $ecv->getSlug());
+    }
+
+    public function testFromArrayWithMissingNameAndSlugUsesDefaults(): void
+    {
+        $data = [
+            'ecv'       => 0.0,
+            'footprint' => 0.0,
+            'items'     => [],
+            'usage'     => ['perYear' => 0.0, 'defaultYears' => 1],
+            'endOfLife' => 0.0,
+        ];
+        $ecv = ECV::fromArray($data);
+        $this->assertSame('—', $ecv->getName());
+        $this->assertSame('ecv', $ecv->getSlug());
+    }
+
     public function testToArrayReturnsCorrectStructure(): void
     {
         $items = $this->createValidItems();
