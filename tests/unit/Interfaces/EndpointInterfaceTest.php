@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 class EndpointInterfaceTest extends TestCase
 {
+    /** @var EndpointInterface */
     private $mockEndpoint;
 
     protected function setUp(): void

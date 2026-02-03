@@ -4,14 +4,36 @@ declare(strict_types = 1);
 
 namespace Jokod\Impactco2Php\Entity;
 
-class Usage
-{
-    private float $perYear;
+use Jokod\Impactco2Php\Exceptions\InvalidArgumentException;
 
-    private int $defaultYears;
+/**
+ * Represents usage information for an item
+ * 
+ * @immutable
+ */
+final readonly class Usage
+{
+    /**
+     * @param float $perYear Usage per year
+     * @param int $defaultYears Default number of years of usage
+     * 
+     * @throws InvalidArgumentException If any parameter is invalid
+     */
+    public function __construct(
+        private float $perYear,
+        private int $defaultYears
+    ) {
+        if ($this->perYear < 0) {
+            throw new InvalidArgumentException('Usage per year cannot be negative');
+        }
+
+        if ($this->defaultYears <= 0) {
+            throw new InvalidArgumentException('Default years must be a positive integer');
+        }
+    }
 
     /**
-     * Get the value of perYear
+     * Get the usage per year
      *
      * @return float
      */
@@ -21,19 +43,7 @@ class Usage
     }
 
     /**
-     * Set the value of perYear
-     *
-     * @return self
-     */
-    public function setPerYear(float $perYear): self
-    {
-        $this->perYear = $perYear;
-
-        return $this;
-    }
-
-    /**
-     * Get the value of defaultYears
+     * Get the default number of years
      *
      * @return int
      */
@@ -43,14 +53,33 @@ class Usage
     }
 
     /**
-     * Set the value of defaultYears
+     * Create a Usage instance from API response data.
+     * Accepts both camelCase (perYear, defaultYears) and lowercase (peryear, defaultyears) as returned by the API.
      *
+     * @param array<string, mixed> $data
      * @return self
      */
-    public function setDefaultYears(int $defaultYears): self
+    public static function fromArray(array $data): self
     {
-        $this->defaultYears = $defaultYears;
+        $perYear = $data['perYear'] ?? $data['peryear'] ?? 0.0;
+        $defaultYears = $data['defaultYears'] ?? $data['defaultyears'] ?? 1;
 
-        return $this;
+        return new self(
+            perYear: (float) $perYear,
+            defaultYears: (int) $defaultYears
+        );
+    }
+
+    /**
+     * Convert the usage to an array
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'perYear'      => $this->perYear,
+            'defaultYears' => $this->defaultYears,
+        ];
     }
 }

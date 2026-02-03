@@ -54,8 +54,8 @@ class TransportEndpointTest extends TestCase
     public function testConstructorWithInvalidTransports(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid transport identifier: invalid_transport');
-        new TransportEndpoint(100, ['invalid_transport']);
+        $this->expectExceptionMessage('Invalid transport identifier: 999');
+        new TransportEndpoint(100, [999]);
     }
 
     public function testConstructorWithInvalidIgnoreRadiativeForcing(): void

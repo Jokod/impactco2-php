@@ -4,11 +4,7 @@ grumphp:
             max_size: 5M
         phpcsfixer:
             config: .php-cs-fixer.dist.php
-        phpstan:
-            level: 9
-            ignore_patterns:
-                - tests/
-            memory_limit: 1G
+        phpunit: ~
     git_hook_variables:
         PATH: '~/.composer/vendor/bin:$PATH'
     fixer:

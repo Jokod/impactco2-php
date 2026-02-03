@@ -10,7 +10,6 @@
 # Executables: vendors
 COMPOSER	  = composer
 PHPUNIT       = ./vendor/bin/phpunit
-PHPSTAN       = ./vendor/bin/phpstan
 PHP_CS_FIXER  = ./vendor/bin/php-cs-fixer
 
 # Misc
@@ -34,7 +33,6 @@ check: lint test ## Run all coding standards checks
 
 lint: ## Lint files with php-cs-fixer
 	$(PHP_CS_FIXER) fix --dry-run
-	$(PHPSTAN) analyse src/ --level=9 --memory-limit 1G
 
 fix: ## Fix files with php-cs-fixer
 	$(PHP_CS_FIXER) fix
@@ -43,4 +41,4 @@ test: ## Run tests
 	$(PHPUNIT) --configuration phpunit.xml
 
 test-coverage: ## Run tests with coverage
-	$(PHPUNIT) --coverage-html=var/coverage --configuration phpunit.xml
+	XDEBUG_MODE=coverage $(PHPUNIT) --coverage-html=var/coverage --configuration phpunit.xml

@@ -9,20 +9,20 @@ use PHPUnit\Framework\TestCase;
 
 class InvalidArgumentExceptionTest extends TestCase
 {
-    public function testExceptionIsInstanceOfBaseException()
+    public function testExceptionIsInstanceOfBaseException(): void
     {
         $exception = new InvalidArgumentException();
         $this->assertInstanceOf(\Exception::class, $exception);
     }
 
-    public function testExceptionMessage()
+    public function testExceptionMessage(): void
     {
         $message = 'Invalid argument provided';
         $exception = new InvalidArgumentException($message);
         $this->assertSame($message, $exception->getMessage());
     }
 
-    public function testExceptionCode()
+    public function testExceptionCode(): void
     {
         $code = 123;
         $exception = new InvalidArgumentException('Invalid argument', $code);

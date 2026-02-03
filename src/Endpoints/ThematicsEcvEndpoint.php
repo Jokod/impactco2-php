@@ -12,21 +12,21 @@ class ThematicsEcvEndpoint extends Endpoint
     public const ENDPOINT = 'thematiques/ecv';
 
     /**
-     * ThematicsEcvEndpoint constructor.
-     *
-     * @param int $id The thematic ECV identifier
-     * @param int|null $detail return the detail of the calculation of the ecv. Otherwise return only the total (0 or 1, default: 0)
+     * @param int|string $id ID (ThematicEnum) ou slug de la thématique (ex: "mobilier", "transport")
+     * @param int|null $detail 1 = détail du calcul ECV, 0 = total uniquement (défaut: 0)
      */
-    public function __construct(int $id, ?int $detail = 0)
+    public function __construct(int|string $id, ?int $detail = 0)
     {
-        if (!in_array($id, ThematicEnum::toArray(), true)) {
-            throw new InvalidArgumentException('Invalid thematic ECV identifier');
+        $resolvedId = \is_string($id) ? ThematicEnum::getIdFromSlug($id) : $id;
+        if ($resolvedId === null || !\in_array($resolvedId, ThematicEnum::toArray(), true)) {
+            throw new InvalidArgumentException('Invalid thematic ECV identifier or slug');
         }
 
-        if (!in_array($detail, [0, 1], true)) {
+        if (!\in_array($detail, [0, 1], true)) {
             throw new InvalidArgumentException('Detail must be 0 or 1');
         }
 
-        parent::__construct(self::ENDPOINT, ['id' => $id], ['detail' => $detail, 'language' => null]);
+        $pathId = \is_string($id) ? $id : $resolvedId;
+        parent::__construct(self::ENDPOINT, [$pathId], ['detail' => $detail, 'language' => null]);
     }
 }
