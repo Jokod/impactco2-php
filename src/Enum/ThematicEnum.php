@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Jokod\Impactco2Php\Enum;
 
 class ThematicEnum
@@ -19,7 +21,7 @@ class ThematicEnum
     /**
      * List of names for each type
      *
-     * @var string[] array
+     * @var string[]
      */
     public static $names = [
         self::NUMERIC               => 'Numeric',
@@ -34,6 +36,30 @@ class ThematicEnum
         self::DIGITAL_USAGE         => 'Digital Usage',
         self::CASE_STUDIES          => 'Case Studies',
     ];
+
+    /**
+     * Slugs utilisés par l'API ImpactCO2 pour /thematiques/ecv/{id}
+     *
+     * @var array<string, int>
+     */
+    public static $slugs = [
+        'numerique'       => self::NUMERIC,
+        'alimentation'    => self::MEAL,
+        'boisson'         => self::DRINK,
+        'transport'       => self::TRANSPORT,
+        'habillement'     => self::CLOTHING,
+        'electromenager'  => self::APPLIANCE,
+        'mobilier'        => self::FURNITURE,
+        'chauffage'       => self::HEATING,
+        'fruitsetlegumes' => self::FRUITS_AND_VEGETABLES,
+        'usagenumerique'  => self::DIGITAL_USAGE,
+        'caspratiques'    => self::CASE_STUDIES,
+    ];
+
+    public static function getIdFromSlug(string $slug): ?int
+    {
+        return self::$slugs[$slug] ?? null;
+    }
 
     public static function getName(?int $id): string
     {

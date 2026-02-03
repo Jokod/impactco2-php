@@ -41,7 +41,7 @@ class HeaterEndpointTest extends TestCase
     public function testConstructorWithInvalidTypes(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid type of heating: invalid_type');
-        new HeaterEndpoint(100, ['invalid_type']);
+        $this->expectExceptionMessage('Invalid type of heating: 999');
+        new HeaterEndpoint(100, [999]);
     }
 }

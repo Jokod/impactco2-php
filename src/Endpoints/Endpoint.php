@@ -4,9 +4,7 @@ declare(strict_types = 1);
 
 namespace Jokod\Impactco2Php\Endpoints;
 
-use Jokod\Impactco2Php\Enum\LanguagesEnum;
 use Jokod\Impactco2Php\Interfaces\EndpointInterface;
-use Jokod\Impactco2Php\Exceptions\InvalidArgumentException;
 
 class Endpoint implements EndpointInterface
 {
@@ -27,20 +25,28 @@ class Endpoint implements EndpointInterface
      */
     public function getPath(string $language): string
     {
+        $path = $this->endpoint;
+
         if (!empty($this->params)) {
             foreach ($this->params as $param) {
-                $this->endpoint .= '/' . $param;
+                $path .= '/' . $param;
             }
         }
 
         if (!empty($this->query)) {
-            if (array_key_exists('language', $this->query)) {
-                $this->query['language'] = $language;
+            $queryParams = $this->query;
+            
+            if (array_key_exists('language', $queryParams)) {
+                $queryParams['language'] = $language;
             }
 
-            $this->endpoint .= '?' . http_build_query($this->query);
+            $queryParams = array_filter($queryParams, fn($value) => $value !== null);
+
+            if (!empty($queryParams)) {
+                $path .= '?' . http_build_query($queryParams);
+            }
         }
 
-        return $this->endpoint;
+        return $path;
     }
 }

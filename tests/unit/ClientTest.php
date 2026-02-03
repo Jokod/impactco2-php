@@ -15,7 +15,7 @@ use Psr\Log\LoggerInterface;
 
 class ClientTest extends TestCase
 {
-    public function testConstructorWithDefaultConfig()
+    public function testConstructorWithDefaultConfig(): void
     {
         $client = new Client([]);
         $this->assertSame(Client::API_BASE_PATH, $client->getConfig('base_path'));
@@ -23,7 +23,7 @@ class ClientTest extends TestCase
         $this->assertSame(LanguagesEnum::default(), $client->getLanguage());
     }
 
-    public function testConstructorWithCustomConfig()
+    public function testConstructorWithCustomConfig(): void
     {
         $config = [
             'api_key'  => 'test_api_key',
@@ -36,42 +36,42 @@ class ClientTest extends TestCase
         $this->assertInstanceOf(\Monolog\Logger::class, $client->getLogger());
     }
 
-    public function testSetAndGetApiKey()
+    public function testSetAndGetApiKey(): void
     {
         $client = new Client();
         $client->setApiKey('test_api_key');
         $this->assertSame('test_api_key', $client->getApiKey());
     }
 
-    public function testSetAndGetLanguage()
+    public function testSetAndGetLanguage(): void
     {
         $client = new Client();
         $client->setLanguage('en');
         $this->assertSame('en', $client->getLanguage());
     }
 
-    public function testSetInvalidLanguage()
+    public function testSetInvalidLanguage(): void
     {
         $this->expectException(Exception::class);
         $client = new Client();
         $client->setLanguage('invalid_language');
     }
 
-    public function testSetAndGetConfig()
+    public function testSetAndGetConfig(): void
     {
         $client = new Client();
         $client->setConfig('test_key', 'test_value');
         $this->assertSame('test_value', $client->getConfig('test_key'));
     }
 
-    public function testSetEmptyConfigKey()
+    public function testSetEmptyConfigKey(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $client = new Client();
         $client->setConfig('', 'test_value');
     }
 
-    public function testLoggerIsSetAndUnset()
+    public function testLoggerIsSetAndUnset(): void
     {
         $config = ['logger' => $this->createMock(LoggerInterface::class)];
         $client = new Client($config);
@@ -79,7 +79,7 @@ class ClientTest extends TestCase
         $this->assertInstanceOf(LoggerInterface::class, $client->getLogger());
     }
 
-    public function testSetAndGetHttpClient()
+    public function testSetAndGetHttpClient(): void
     {
         /** @var ClientInterface $httpClient */
         $httpClient = $this->createMock(ClientInterface::class);
@@ -88,13 +88,13 @@ class ClientTest extends TestCase
         $this->assertSame($httpClient, $client->getHttpClient());
     }
 
-    public function testGetDefaultHttpClient()
+    public function testGetDefaultHttpClient(): void
     {
         $client = new Client();
         $this->assertInstanceOf(ClientInterface::class, $client->getHttpClient());
     }
 
-    public function testSetAndGetLogger()
+    public function testSetAndGetLogger(): void
     {
         /** @var LoggerInterface $logger */
         $logger = $this->createMock(LoggerInterface::class);
@@ -103,13 +103,13 @@ class ClientTest extends TestCase
         $this->assertSame($logger, $client->getLogger());
     }
 
-    public function testGetDefaultLogger()
+    public function testGetDefaultLogger(): void
     {
         $client = new Client();
         $this->assertInstanceOf(LoggerInterface::class, $client->getLogger());
     }
 
-    public function testExecuteSuccess()
+    public function testExecuteSuccess(): void
     {
         $endpoint = $this->createMock(Endpoint::class);
         $endpoint->method('getPath')->willReturn('test_path');
@@ -133,7 +133,7 @@ class ClientTest extends TestCase
         $this->assertSame(['data' => 'test'], $result);
     }
 
-    public function testExecuteError()
+    public function testExecuteError(): void
     {
         $endpoint = $this->createMock(Endpoint::class);
         $endpoint->method('getPath')->willReturn('test_path');
@@ -158,7 +158,7 @@ class ClientTest extends TestCase
         $client->execute($endpoint);
     }
 
-    public function testExecuteUnknownError()
+    public function testExecuteUnknownError(): void
     {
         $endpoint = $this->createMock(Endpoint::class);
         $endpoint->method('getPath')->willReturn('test_path');
@@ -183,7 +183,7 @@ class ClientTest extends TestCase
         $client->execute($endpoint);
     }
 
-    public function testAddOptions()
+    public function testAddOptions(): void
     {
         $client = new Client();
         $result = $client->addOptions([]);
@@ -197,7 +197,7 @@ class ClientTest extends TestCase
         $this->assertArrayHasKey('headers', $result);
     }
 
-    public function testAddOptionsWithApiKey()
+    public function testAddOptionsWithApiKey(): void
     {
         $client = new Client([
             'api_key' => 'testApiKey',

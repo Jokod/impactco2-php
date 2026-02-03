@@ -28,8 +28,23 @@ class ThematicsEcvEndpointTest extends TestCase
     public function testConstructorWithInvalidId(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid thematic ECV identifier');
+        $this->expectExceptionMessage('Invalid thematic ECV identifier or slug');
         new ThematicsEcvEndpoint(-1);
+    }
+
+    public function testConstructorWithValidSlug(): void
+    {
+        $endpoint = new ThematicsEcvEndpoint('mobilier');
+        $this->assertInstanceOf(ThematicsEcvEndpoint::class, $endpoint);
+        $path = $endpoint->getPath('fr');
+        $this->assertStringContainsString('mobilier', $path);
+    }
+
+    public function testConstructorWithInvalidSlug(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid thematic ECV identifier or slug');
+        new ThematicsEcvEndpoint('slug_invalide');
     }
 
     public function testConstructorWithInvalidDetail(): void

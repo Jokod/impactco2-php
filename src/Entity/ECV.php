@@ -4,27 +4,65 @@ declare(strict_types = 1);
 
 namespace Jokod\Impactco2Php\Entity;
 
-class ECV
+use Jokod\Impactco2Php\Exceptions\InvalidArgumentException;
+
+/**
+ * Represents an Environmental Life Cycle (ECV) assessment
+ * 
+ * @immutable
+ */
+final readonly class ECV
 {
-    private string $name;
-
-    private float $ecv;
-
-    private string $slug;
-
-    private float $footprint;
-
     /**
-     * @var Item[] $items
+     * @param string $name The ECV name
+     * @param float $ecv The total ECV value
+     * @param string $slug The ECV slug
+     * @param float $footprint The carbon footprint
+     * @param Item[] $items The list of items in the ECV
+     * @param Usage $usage The usage information
+     * @param float $endOfLife The end of life value
+     * 
+     * @throws InvalidArgumentException If any parameter is invalid
      */
-    private array $items;
+    public function __construct(
+        private string $name,
+        private float $ecv,
+        private string $slug,
+        private float $footprint,
+        private array $items,
+        private Usage $usage,
+        private float $endOfLife
+    ) {
+        if (empty(trim($this->name))) {
+            throw new InvalidArgumentException('ECV name cannot be empty');
+        }
 
-    private Usage $usage;
+        if ($this->ecv < 0) {
+            throw new InvalidArgumentException('ECV value cannot be negative');
+        }
 
-    private float $endOfLife;
+        if (empty(trim($this->slug))) {
+            throw new InvalidArgumentException('ECV slug cannot be empty');
+        }
+
+        if ($this->footprint < 0) {
+            throw new InvalidArgumentException('Footprint cannot be negative');
+        }
+
+        // Validate that all items are actually Item instances
+        foreach ($this->items as $item) {
+            if (!$item instanceof Item) {
+                throw new InvalidArgumentException('All items must be instances of Item');
+            }
+        }
+
+        if ($this->endOfLife < 0) {
+            throw new InvalidArgumentException('End of life value cannot be negative');
+        }
+    }
 
     /**
-     * Get the value of name
+     * Get the ECV name
      *
      * @return string
      */
@@ -34,19 +72,7 @@ class ECV
     }
 
     /**
-     * Set the value of name
-     *
-     * @return self
-     */
-    public function setName(string $name): self
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * Get the value of ecv
+     * Get the total ECV value
      *
      * @return float
      */
@@ -56,19 +82,7 @@ class ECV
     }
 
     /**
-     * Set the value of ecv
-     *
-     * @return self
-     */
-    public function setEcv(float $ecv): self
-    {
-        $this->ecv = $ecv;
-
-        return $this;
-    }
-
-    /**
-     * Get the value of slug
+     * Get the ECV slug
      *
      * @return string
      */
@@ -78,19 +92,7 @@ class ECV
     }
 
     /**
-     * Set the value of slug
-     *
-     * @return self
-     */
-    public function setSlug(string $slug): self
-    {
-        $this->slug = $slug;
-
-        return $this;
-    }
-
-    /**
-     * Get the value of footprint
+     * Get the carbon footprint
      *
      * @return float
      */
@@ -100,19 +102,7 @@ class ECV
     }
 
     /**
-     * Set the value of footprint
-     *
-     * @return self
-     */
-    public function setFootprint(float $footprint): self
-    {
-        $this->footprint = $footprint;
-
-        return $this;
-    }
-
-    /**
-     * Get the value of items
+     * Get the list of items
      *
      * @return Item[]
      */
@@ -122,21 +112,9 @@ class ECV
     }
 
     /**
-     * Set the value of items
+     * Get the usage information
      *
-     * @param Item[] $items
-     *
-     * @return self
-     */
-    public function setItems(array $items): self
-    {
-        $this->items = $items;
-
-        return $this;
-    }
-
-    /**
-     * Get the value of usage
+     * @return Usage
      */
     public function getUsage(): Usage
     {
@@ -144,19 +122,7 @@ class ECV
     }
 
     /**
-     * Set the value of usage
-     *
-     * @return self
-     */
-    public function setUsage(Usage $usage): self
-    {
-        $this->usage = $usage;
-
-        return $this;
-    }
-
-    /**
-     * Get the value of endOfLife
+     * Get the end of life value
      *
      * @return float
      */
@@ -166,14 +132,61 @@ class ECV
     }
 
     /**
-     * Set the value of endOfLife
+     * Create an ECV instance from API response data.
+     * Accepts "items" or "footprintDetail" (API returns footprintDetail as array of {id, value}).
      *
+     * @param array<string, mixed> $data
      * @return self
      */
-    public function setEndOfLife(float $endOfLife): self
+    public static function fromArray(array $data): self
     {
-        $this->endOfLife = $endOfLife;
+        $items = [];
+        $itemsSource = $data['items'] ?? $data['footprintDetail'] ?? [];
+        if (\is_array($itemsSource)) {
+            foreach ($itemsSource as $itemData) {
+                if (\is_array($itemData)) {
+                    $items[] = Item::fromArray($itemData);
+                }
+            }
+        }
 
-        return $this;
+        $usageData = $data['usage'] ?? [];
+        $usage = \is_array($usageData)
+            ? Usage::fromArray($usageData)
+            : new Usage(0.0, 1);
+
+        $name = $data['name'] ?? '';
+        $ecv = $data['ecv'] ?? 0.0;
+        $slug = $data['slug'] ?? '';
+        $footprint = $data['footprint'] ?? 0.0;
+        $endOfLife = $data['endOfLife'] ?? 0.0;
+
+        return new self(
+            name: (string) $name,
+            ecv: (float) $ecv,
+            slug: (string) $slug,
+            footprint: (float) $footprint,
+            items: $items,
+            usage: $usage,
+            endOfLife: (float) $endOfLife
+        );
+    }
+
+    /**
+     * Convert the ECV to an array
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'name'      => $this->name,
+            'ecv'       => $this->ecv,
+            'slug'      => $this->slug,
+            'footprint' => $this->footprint,
+            'items'     => array_map(fn(Item $item) => $item->toArray(), $this->items),
+            'usage'     => $this->usage->toArray(),
+            'endOfLife' => $this->endOfLife,
+        ];
     }
 }

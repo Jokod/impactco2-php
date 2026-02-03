@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Jokod\Impactco2Php\Enum;
 
 class TransportsEnum
@@ -10,7 +12,7 @@ class TransportsEnum
     public const CAR = 4;
     public const ELECTRIC_CAR = 5;
     public const BUS = 6;
-    public const ON_FOOT = 7;
+    public const BIKE = 7;
     public const ELECTRIC_BIKE = 8;
     public const THERMAL_BUS = 9;
     public const TRAMWAY = 10;
@@ -30,6 +32,7 @@ class TransportsEnum
     public const ELECTRIC_CARPOOLING_2 = 27;
     public const ELECTRIC_CARPOOLING_3 = 28;
     public const ELECTRIC_CARPOOLING_4 = 29;
+    public const WALKING = 30;
 
     /**
      * List of names for each type
@@ -43,8 +46,8 @@ class TransportsEnum
         self::CAR                   => 'Voiture',
         self::ELECTRIC_CAR          => 'Voiture électrique',
         self::BUS                   => 'Bus',
-        self::ON_FOOT               => 'À pied',
-        self::ELECTRIC_BIKE         => 'Vélo électrique',
+        self::BIKE                  => 'Vélo',
+        self::ELECTRIC_BIKE         => 'Vélo à assistance électrique',
         self::THERMAL_BUS           => 'Bus thermique',
         self::TRAMWAY               => 'Tramway',
         self::METRO                 => 'Métro',
@@ -63,6 +66,7 @@ class TransportsEnum
         self::ELECTRIC_CARPOOLING_2 => 'Covoiturage électrique 2 personnes',
         self::ELECTRIC_CARPOOLING_3 => 'Covoiturage électrique 3 personnes',
         self::ELECTRIC_CARPOOLING_4 => 'Covoiturage électrique 4 personnes',
+        self::WALKING               => 'Marche',
     ];
 
     public static function getName(?int $id): string
@@ -96,8 +100,8 @@ class TransportsEnum
                 return '🚗⚡';
             case self::BUS:
                 return '🚌';
-            case self::ON_FOOT:
-                return '🚶';
+            case self::BIKE:
+                return '🚴';
             case self::ELECTRIC_BIKE:
                 return '🚴⚡';
             case self::THERMAL_BUS:
@@ -136,6 +140,8 @@ class TransportsEnum
                 return '🚗⚡👥';
             case self::ELECTRIC_CARPOOLING_4:
                 return '🚗⚡👥';
+            case self::WALKING:
+                return '🚶';
             default:
                 return '❓';
         }
@@ -153,7 +159,7 @@ class TransportsEnum
             self::CAR,
             self::ELECTRIC_CAR,
             self::BUS,
-            self::ON_FOOT,
+            self::BIKE,
             self::ELECTRIC_BIKE,
             self::THERMAL_BUS,
             self::TRAMWAY,
@@ -173,6 +179,7 @@ class TransportsEnum
             self::ELECTRIC_CARPOOLING_2,
             self::ELECTRIC_CARPOOLING_3,
             self::ELECTRIC_CARPOOLING_4,
+            self::WALKING,
         ];
     }
 }
