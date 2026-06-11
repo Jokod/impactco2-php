@@ -8,24 +8,18 @@ use PHPUnit\Framework\TestCase;
 
 class EndpointInterfaceTest extends TestCase
 {
-    /** @var EndpointInterface */
-    private $mockEndpoint;
-
-    protected function setUp(): void
-    {
-        $this->mockEndpoint = $this->createMock(EndpointInterface::class);
-    }
-
     public function testGetPath(): void
     {
         $language = 'en';
         $expectedPath = '/path/to/resource/en';
 
-        $this->mockEndpoint->method('getPath')
+        $endpoint = $this->createMock(EndpointInterface::class);
+        $endpoint->expects($this->once())
+            ->method('getPath')
             ->with($this->equalTo($language))
             ->willReturn($expectedPath);
 
-        $this->assertSame($expectedPath, $this->mockEndpoint->getPath($language));
+        $this->assertSame($expectedPath, $endpoint->getPath($language));
     }
 
     public function testGetPathWithDifferentLanguage(): void
@@ -33,10 +27,12 @@ class EndpointInterfaceTest extends TestCase
         $language = 'fr';
         $expectedPath = '/path/to/resource/fr';
 
-        $this->mockEndpoint->method('getPath')
+        $endpoint = $this->createMock(EndpointInterface::class);
+        $endpoint->expects($this->once())
+            ->method('getPath')
             ->with($this->equalTo($language))
             ->willReturn($expectedPath);
 
-        $this->assertSame($expectedPath, $this->mockEndpoint->getPath($language));
+        $this->assertSame($expectedPath, $endpoint->getPath($language));
     }
 }

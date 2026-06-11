@@ -74,7 +74,7 @@ class ClientTest extends TestCase
 
     public function testLoggerIsSetAndUnset(): void
     {
-        $config = ['logger' => $this->createMock(LoggerInterface::class)];
+        $config = ['logger' => $this->createStub(LoggerInterface::class)];
         $client = new Client($config);
 
         $this->assertInstanceOf(LoggerInterface::class, $client->getLogger());
@@ -83,7 +83,7 @@ class ClientTest extends TestCase
     public function testSetAndGetHttpClient(): void
     {
         /** @var ClientInterface $httpClient */
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
         $client = new Client();
         $client->setHttpClient($httpClient);
         $this->assertSame($httpClient, $client->getHttpClient());
@@ -98,7 +98,7 @@ class ClientTest extends TestCase
     public function testSetAndGetLogger(): void
     {
         /** @var LoggerInterface $logger */
-        $logger = $this->createMock(LoggerInterface::class);
+        $logger = $this->createStub(LoggerInterface::class);
         $client = new Client();
         $client->setLogger($logger);
         $this->assertSame($logger, $client->getLogger());
@@ -112,20 +112,20 @@ class ClientTest extends TestCase
 
     public function testExecuteSuccess(): void
     {
-        $endpoint = $this->createMock(Endpoint::class);
+        $endpoint = $this->createStub(Endpoint::class);
         $endpoint->method('getPath')->willReturn('test_path');
         $endpoint->method('transformResponse')->willReturnCallback(
             static fn (array $raw): ApiResponse => new ApiResponse($raw['data'] ?? null, $raw['warning'] ?? null)
         );
 
-        $responseBody = $this->createMock(StreamInterface::class);
+        $responseBody = $this->createStub(StreamInterface::class);
         $responseBody->method('getContents')->willReturn(json_encode(['data' => 'test']));
 
-        $response = $this->createMock(ResponseInterface::class);
+        $response = $this->createStub(ResponseInterface::class);
         $response->method('getStatusCode')->willReturn(200);
         $response->method('getBody')->willReturn($responseBody);
 
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
         $httpClient->method('request')->willReturn($response);
 
         $client = new Client();
@@ -141,17 +141,17 @@ class ClientTest extends TestCase
 
     public function testExecuteError(): void
     {
-        $endpoint = $this->createMock(Endpoint::class);
+        $endpoint = $this->createStub(Endpoint::class);
         $endpoint->method('getPath')->willReturn('test_path');
 
-        $responseBody = $this->createMock(StreamInterface::class);
+        $responseBody = $this->createStub(StreamInterface::class);
         $responseBody->method('getContents')->willReturn(json_encode(['issues' => 'Unknown error']));
 
-        $response = $this->createMock(ResponseInterface::class);
+        $response = $this->createStub(ResponseInterface::class);
         $response->method('getStatusCode')->willReturn(500);
         $response->method('getBody')->willReturn($responseBody);
 
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
         $httpClient->method('request')->willReturn($response);
 
         $client = new Client();
@@ -166,17 +166,17 @@ class ClientTest extends TestCase
 
     public function testExecuteUnknownError(): void
     {
-        $endpoint = $this->createMock(Endpoint::class);
+        $endpoint = $this->createStub(Endpoint::class);
         $endpoint->method('getPath')->willReturn('test_path');
 
-        $responseBody = $this->createMock(StreamInterface::class);
+        $responseBody = $this->createStub(StreamInterface::class);
         $responseBody->method('getContents')->willReturn(\json_encode(['test' => 'test']));
 
-        $response = $this->createMock(ResponseInterface::class);
+        $response = $this->createStub(ResponseInterface::class);
         $response->method('getBody')->willReturn($responseBody);
         $response->method('getStatusCode')->willReturn(500);
 
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
         $httpClient->method('request')->willReturn($response);
 
         $client = new Client();
