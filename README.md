@@ -78,7 +78,7 @@ use Jokod\Impactco2Php\Enum\LanguagesEnum;
 
 $client = new Client([
     'api_key'  => 'votre_cle_api',     // Optionnel - Clé API si nécessaire
-    'language' => LanguagesEnum::FR     // Optionnel - Langue (FR, EN, ES, DE)
+    'language' => LanguagesEnum::FR     // Optionnel - Langue (FR, EN, ES)
 ]);
 ```
 
@@ -87,7 +87,7 @@ $client = new Client([
 | Option | Type | Défaut | Description |
 |--------|------|--------|-------------|
 | `api_key` | `string\|null` | `null` | Clé API (si requis par l'API) |
-| `language` | `string` | `'fr'` | Langue des résultats. Valeurs : `fr`, `en`, `es`, `de` (minuscules) ou constantes `LanguagesEnum::FR`, `LanguagesEnum::EN`, etc. |
+| `language` | `string` | `'fr'` | Langue des résultats. Valeurs : `fr`, `en`, `es` (minuscules) ou constantes `LanguagesEnum::FR`, `LanguagesEnum::EN`, `LanguagesEnum::ES`. |
 | `logger` | `LoggerInterface\|null` | Logger par défaut | Logger personnalisé PSR-3 |
 
 **Format des réponses :** `execute()` retourne toujours une `ApiResponse` avec :
@@ -126,11 +126,14 @@ $endpoint = new TransportEndpoint(
     distance: 100,                          // Distance en km
     transports: [TransportsEnum::CAR],      // Liste des transports (optionnel)
     displayAll: false,                      // Afficher tous les transports pertinents
-    occupencyRate: 2,                       // Taux d'occupation du véhicule
+    occupencyRate: 2,                       // Taux d'occupation du véhicule (1 à 11)
     includeConstruction: 1,                 // Inclure les émissions de construction (0 ou 1)
-    ignoreRadiativeForcing: 0               // Ignorer le forçage radiatif avion (0 ou 1)
+    ignoreRadiativeForcing: 0,              // Ignorer le forçage radiatif avion (0 ou 1)
+    numberOfPassenger: 2                    // Nombre de passagers pour le covoiturage (0 à 10)
 );
 ```
+
+> **Identifiants de transport** : au-delà des constantes de `TransportsEnum`, l'endpoint accepte tout identifiant entier positif renvoyé par l'API, y compris les variantes détaillées (ex. `100` à `204` : voitures par taille/carburant, covoiturages détaillés, etc.). Vous pouvez donc passer directement ces IDs dans `transports`.
 
 #### Transports disponibles
 
@@ -162,6 +165,11 @@ TransportsEnum::ELECTRIC_CARPOOLING_1    // Covoiturage électrique 1 personne
 TransportsEnum::ELECTRIC_CARPOOLING_2    // Covoiturage électrique 2 personnes
 TransportsEnum::ELECTRIC_CARPOOLING_3    // Covoiturage électrique 3 personnes
 TransportsEnum::ELECTRIC_CARPOOLING_4    // Covoiturage électrique 4 personnes
+TransportsEnum::CAMPER_VAN               // Camping-car
+TransportsEnum::LIGHT_MOTORCYCLE         // Moto thermique (<= 250 cm³)
+TransportsEnum::ELECTRIC_MOPED           // Scooter électrique
+TransportsEnum::CARGO_BIKE               // Vélo cargo triporteur
+TransportsEnum::VAN                      // Van
 ```
 
 ### 2. Chauffage
@@ -196,6 +204,7 @@ HeaterEnum::HEAT_PUMP_HEATING        // Pompe à chaleur
 HeaterEnum::PELLET_STOVE_HEATING     // Poêle à granulés
 HeaterEnum::WOOD_STOVE_HEATING       // Poêle à bois
 HeaterEnum::DISTRICT_HEATING         // Réseau de chaleur
+HeaterEnum::PELLET_BOILER_HEATING    // Chaudière à granulés
 ```
 
 ### 3. Fruits et légumes

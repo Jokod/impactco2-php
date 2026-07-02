@@ -2,6 +2,51 @@
 
 Tous les changements notables de ce projet sont documentés dans ce fichier.
 
+## [1.3.0] - 2026-07-02
+
+### Ajouté
+
+- **TransportsEnum** : nouveaux modes renvoyés par l'API — `CAMPER_VAN` (31), `LIGHT_MOTORCYCLE` (32), `ELECTRIC_MOPED` (33), `CARGO_BIKE` (34) et `VAN` (35), avec libellés et emojis associés.
+- **TransportEndpoint** : nouveau paramètre `numberOfPassenger` (0 à 10) pour le calcul du covoiturage, aligné sur l'API `/transport`.
+- **HeaterEnum** : nouveau type `PELLET_BOILER_HEATING` (8) « Chauffage avec une chaudière à granulés ».
+- **Tests** : couverture des nouveaux modes de transport, des identifiants détaillés (100-204), du paramètre `numberOfPassenger` et du nouveau type de chauffage.
+
+### Modifié
+
+- **TransportEndpoint** : la validation des transports accepte désormais tout identifiant entier positif (dont les variantes détaillées `100-204` exposées par l'API) au lieu de se limiter aux constantes de `TransportsEnum`. Le message d'erreur reste « Invalid transport identifier: X » pour un identifiant non positif.
+- **README** : documentation des nouveaux modes de transport, du paramètre `numberOfPassenger`, du type de chauffage « chaudière à granulés » et des langues réellement supportées.
+
+### Supprimé
+
+- **LanguagesEnum** : retrait de la langue `de` (`DE`), rejetée par l'API (`400`) sur la majorité des endpoints. Langues supportées : `fr`, `en`, `es`.
+
+[1.3.0]: https://github.com/jokod/impactco2-php/compare/1.2.5...1.3.0
+
+## [1.2.5] - 2026-07-02
+
+### Corrigé
+
+- **Sécurité** : mise à jour des dépendances (`composer.lock`) pour corriger une vulnérabilité.
+
+[1.2.5]: https://github.com/jokod/impactco2-php/compare/1.2.4...1.2.5
+
+## [1.2.4] - 2026-06-11
+
+### Modifié
+
+- **Dépendances** : mise à jour de `composer` (montée de `phpunit/phpunit` vers `^12`).
+- **Tests** : adaptation de `ClientTest` et `EndpointInterfaceTest` à PHPUnit 12.
+
+[1.2.4]: https://github.com/jokod/impactco2-php/compare/1.2.3...1.2.4
+
+## [1.2.3] - 2026-04-19
+
+### Modifié
+
+- **Dépendances** : montée de `phpunit/phpunit` (Dependabot) et mise à jour de `composer.lock`.
+
+[1.2.3]: https://github.com/jokod/impactco2-php/compare/v1.2.2...1.2.3
+
 ## [1.2.2] - 2026-02-03
 
 ### Modifié

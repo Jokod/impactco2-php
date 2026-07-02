@@ -12,6 +12,8 @@ class TransportsEnumTest extends TestCase
         $this->assertSame('Avion', TransportsEnum::getName(TransportsEnum::PLANE));
         $this->assertSame('TGV', TransportsEnum::getName(TransportsEnum::TGV));
         $this->assertSame('Marche', TransportsEnum::getName(TransportsEnum::WALKING));
+        $this->assertSame('Camping-car', TransportsEnum::getName(TransportsEnum::CAMPER_VAN));
+        $this->assertSame('Van', TransportsEnum::getName(TransportsEnum::VAN));
         $this->assertSame('Non défini', TransportsEnum::getName(null));
         $this->assertSame('Non défini', TransportsEnum::getName(999));
     }
@@ -45,6 +47,11 @@ class TransportsEnumTest extends TestCase
         $this->assertSame('🚗⚡👥', TransportsEnum::getEmoji(TransportsEnum::ELECTRIC_CARPOOLING_3));
         $this->assertSame('🚗⚡👥', TransportsEnum::getEmoji(TransportsEnum::ELECTRIC_CARPOOLING_4));
         $this->assertSame('🚶', TransportsEnum::getEmoji(TransportsEnum::WALKING));
+        $this->assertSame('🚐', TransportsEnum::getEmoji(TransportsEnum::CAMPER_VAN));
+        $this->assertSame('🏍️', TransportsEnum::getEmoji(TransportsEnum::LIGHT_MOTORCYCLE));
+        $this->assertSame('🛵⚡', TransportsEnum::getEmoji(TransportsEnum::ELECTRIC_MOPED));
+        $this->assertSame('🚲', TransportsEnum::getEmoji(TransportsEnum::CARGO_BIKE));
+        $this->assertSame('🚐', TransportsEnum::getEmoji(TransportsEnum::VAN));
         $this->assertSame('❓', TransportsEnum::getEmoji(null));
         $this->assertSame('❓', TransportsEnum::getEmoji(999));
     }
@@ -79,6 +86,11 @@ class TransportsEnumTest extends TestCase
             TransportsEnum::ELECTRIC_CARPOOLING_3,
             TransportsEnum::ELECTRIC_CARPOOLING_4,
             TransportsEnum::WALKING,
+            TransportsEnum::CAMPER_VAN,
+            TransportsEnum::LIGHT_MOTORCYCLE,
+            TransportsEnum::ELECTRIC_MOPED,
+            TransportsEnum::CARGO_BIKE,
+            TransportsEnum::VAN,
         ];
         $this->assertSame($expected, TransportsEnum::toArray());
     }

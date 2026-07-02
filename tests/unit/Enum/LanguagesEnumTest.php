@@ -14,7 +14,7 @@ class LanguagesEnumTest extends TestCase
 
     public function testToArray(): void
     {
-        $expected = ['fr', 'en', 'es', 'de'];
+        $expected = ['fr', 'en', 'es'];
         $this->assertSame($expected, LanguagesEnum::toArray());
     }
 }

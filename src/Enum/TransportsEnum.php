@@ -33,6 +33,11 @@ class TransportsEnum
     public const ELECTRIC_CARPOOLING_3 = 28;
     public const ELECTRIC_CARPOOLING_4 = 29;
     public const WALKING = 30;
+    public const CAMPER_VAN = 31;
+    public const LIGHT_MOTORCYCLE = 32;
+    public const ELECTRIC_MOPED = 33;
+    public const CARGO_BIKE = 34;
+    public const VAN = 35;
 
     /**
      * List of names for each type
@@ -67,6 +72,11 @@ class TransportsEnum
         self::ELECTRIC_CARPOOLING_3 => 'Covoiturage électrique 3 personnes',
         self::ELECTRIC_CARPOOLING_4 => 'Covoiturage électrique 4 personnes',
         self::WALKING               => 'Marche',
+        self::CAMPER_VAN            => 'Camping-car',
+        self::LIGHT_MOTORCYCLE      => 'Moto thermique (<= 250 cm³)',
+        self::ELECTRIC_MOPED        => 'Scooter électrique',
+        self::CARGO_BIKE            => 'Vélo cargo triporteur',
+        self::VAN                   => 'Van',
     ];
 
     public static function getName(?int $id): string
@@ -142,6 +152,16 @@ class TransportsEnum
                 return '🚗⚡👥';
             case self::WALKING:
                 return '🚶';
+            case self::CAMPER_VAN:
+                return '🚐';
+            case self::LIGHT_MOTORCYCLE:
+                return '🏍️';
+            case self::ELECTRIC_MOPED:
+                return '🛵⚡';
+            case self::CARGO_BIKE:
+                return '🚲';
+            case self::VAN:
+                return '🚐';
             default:
                 return '❓';
         }
@@ -180,6 +200,11 @@ class TransportsEnum
             self::ELECTRIC_CARPOOLING_3,
             self::ELECTRIC_CARPOOLING_4,
             self::WALKING,
+            self::CAMPER_VAN,
+            self::LIGHT_MOTORCYCLE,
+            self::ELECTRIC_MOPED,
+            self::CARGO_BIKE,
+            self::VAN,
         ];
     }
 }

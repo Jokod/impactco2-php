@@ -9,7 +9,6 @@ class LanguagesEnum
     public const FR = 'fr';
     public const EN = 'en';
     public const ES = 'es';
-    public const DE = 'de';
 
     /**
      * @return string default language
@@ -28,7 +27,6 @@ class LanguagesEnum
             self::FR,
             self::EN,
             self::ES,
-            self::DE,
         ];
     }
 }

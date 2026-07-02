@@ -55,8 +55,33 @@ class TransportEndpointTest extends TestCase
     public function testConstructorWithInvalidTransports(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid transport identifier: 999');
-        new TransportEndpoint(100, [999]);
+        $this->expectExceptionMessage('Invalid transport identifier: 0');
+        new TransportEndpoint(100, [0]);
+    }
+
+    public function testConstructorAcceptsNewAndDetailedTransportIdentifiers(): void
+    {
+        $transports = [
+            TransportsEnum::CAMPER_VAN,
+            TransportsEnum::VAN,
+            100,
+            204,
+        ];
+        $endpoint = new TransportEndpoint(100, $transports);
+        $this->assertInstanceOf(TransportEndpoint::class, $endpoint);
+    }
+
+    public function testConstructorWithValidNumberOfPassenger(): void
+    {
+        $endpoint = new TransportEndpoint(100, [TransportsEnum::CAR], false, 1, 0, 0, 3);
+        $this->assertInstanceOf(TransportEndpoint::class, $endpoint);
+    }
+
+    public function testConstructorWithInvalidNumberOfPassenger(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Number of passengers must be between 0 and 10');
+        new TransportEndpoint(100, [TransportsEnum::CAR], false, 1, 0, 0, 11);
     }
 
     public function testConstructorWithInvalidIgnoreRadiativeForcing(): void
