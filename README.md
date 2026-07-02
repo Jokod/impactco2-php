@@ -1,6 +1,6 @@
 ![ImpactCO2 Logo](./docs/images/impactco2_logo.webp)
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/jokod/impactco2-php.svg?style=flat-square)](https://packagist.org/packages/jokod/impactco2-php) [![Total Downloads](https://img.shields.io/packagist/dt/jokod/impactco2-php.svg?style=flat-square)](https://packagist.org/packages/jokod/impactco2-php) [![License](https://img.shields.io/packagist/l/jokod/impactco2-php.svg?style=flat-square)](https://packagist.org/packages/jokod/impactco2-php) ![GitHub release](https://img.shields.io/github/v/release/jokod/impactco2-php?style=flat-square)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/jokod/impactco2-php.svg?style=flat-square)](https://packagist.org/packages/jokod/impactco2-php) [![Total Downloads](https://img.shields.io/packagist/dt/jokod/impactco2-php.svg?style=flat-square)](https://packagist.org/packages/jokod/impactco2-php) [![License](https://img.shields.io/packagist/l/jokod/impactco2-php.svg?style=flat-square)](https://packagist.org/packages/jokod/impactco2-php) [![GitHub release](https://img.shields.io/github/v/release/Jokod/impactco2-php?style=flat-square&sort=semver)](https://github.com/Jokod/impactco2-php/releases)
 
 # 🌍 ImpactCO2 PHP Client
 

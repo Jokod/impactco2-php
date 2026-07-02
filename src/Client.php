@@ -69,6 +69,8 @@ class Client
             $this->setLogger($this->createDefaultLogger());
             unset($this->config['logger']);
         }
+
+        $this->config['base_path'] = $this->validateBasePath($this->config['base_path']);
     }
 
     /**
@@ -87,7 +89,7 @@ class Client
 
         try {
             $response = $this->getHttpClient()->request('GET', $path, $options);
-            $content = json_decode($response->getBody()->getContents(), true);
+            $content = json_decode($response->getBody()->getContents(), true, 512);
 
             if ($response->getStatusCode() !== 200) {
                 $errorMessage = 'Unknown error';
@@ -103,10 +105,14 @@ class Client
             $this->getLogger()->error('Error during request', [
                 'exception' => $e,
                 'endpoint'  => $endpoint,
-                'options'   => $options,
+                'options'   => $this->sanitizeOptionsForLog($options),
             ]);
 
-            throw new Exception($e->getMessage());
+            if ($e instanceof Exception) {
+                throw $e;
+            }
+
+            throw new Exception('Unable to connect to Impact CO2 API');
         }
     }
 
@@ -145,6 +151,10 @@ class Client
     {
         if (!\is_string($name) || $name === '') {
             throw new InvalidArgumentException('Invalid configuration name');
+        }
+
+        if ($name === 'base_path') {
+            $value = $this->validateBasePath($value);
         }
 
         $this->config[$name] = $value;
@@ -260,8 +270,10 @@ class Client
     protected function createDefaultHttpClient(): GuzzleClient
     {
         $options = [
-            'base_uri'    => $this->config['base_path'],
-            'http_errors' => false,
+            'base_uri'        => $this->config['base_path'],
+            'http_errors'     => false,
+            'timeout'         => 30,
+            'connect_timeout' => 10,
         ];
 
         return new GuzzleClient($options);
@@ -279,5 +291,40 @@ class Client
         $logger->pushHandler($handler);
 
         return $logger;
+    }
+
+    /**
+     * @param mixed $basePath
+     */
+    private function validateBasePath($basePath): string
+    {
+        if (!\is_string($basePath) || $basePath === '') {
+            throw new InvalidArgumentException('Invalid base_path: must be a non-empty HTTPS URL');
+        }
+
+        $parts = \parse_url($basePath);
+        if (
+            $parts === false
+            || ($parts['scheme'] ?? '') !== 'https'
+            || ($parts['host'] ?? '') !== 'impactco2.fr'
+        ) {
+            throw new InvalidArgumentException('Invalid base_path: must use HTTPS and point to impactco2.fr');
+        }
+
+        return $basePath;
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
+     */
+    private function sanitizeOptionsForLog(array $options): array
+    {
+        if (isset($options['headers']['Authorization'])) {
+            $options['headers']['Authorization'] = 'Bearer ***';
+        }
+
+        return $options;
     }
 }
