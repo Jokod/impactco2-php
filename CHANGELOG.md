@@ -2,6 +2,23 @@
 
 Tous les changements notables de ce projet sont documentés dans ce fichier.
 
+## [1.3.1] - 2026-07-02
+
+### Corrigé
+
+- **Client** : masquage de la clé API (`Authorization: Bearer ***`) dans les logs d'erreur.
+- **Client** : messages d'erreur réseau génériques (`Unable to connect to Impact CO2 API`) au lieu de relayer les détails Guzzle.
+- **Client** : validation de `base_path` (HTTPS obligatoire, hôte `impactco2.fr` uniquement).
+- **Client** : timeouts HTTP par défaut (`timeout: 30s`, `connect_timeout: 10s`).
+- **Client** : profondeur maximale de `json_decode` limitée à 512.
+- **Dépendances** : `phpro/grumphp` déplacé en `require-dev`.
+
+### Ajouté
+
+- **Tests** : couverture complète de `Client.php` (100 % lignes/méthodes), dont `validateBasePath` et les cas d'erreur réseau.
+
+[1.3.1]: https://github.com/jokod/impactco2-php/compare/1.3.0...1.3.1
+
 ## [1.3.0] - 2026-07-02
 
 ### Ajouté

@@ -72,6 +72,226 @@ class ClientTest extends TestCase
         $client->setConfig('', 'test_value');
     }
 
+    public function testSetInvalidBasePath(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid base_path: must use HTTPS and point to impactco2.fr');
+        $client = new Client();
+        $client->setConfig('base_path', 'http://evil.com/api/v1/');
+    }
+
+    public function testConstructorWithInvalidBasePath(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        new Client(['base_path' => 'https://example.com/api/v1/']);
+    }
+
+    public function testSetEmptyBasePath(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid base_path: must be a non-empty HTTPS URL');
+        $client = new Client();
+        $client->setConfig('base_path', '');
+    }
+
+    public function testSetNonStringBasePath(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid base_path: must be a non-empty HTTPS URL');
+        $client = new Client();
+        $client->setConfig('base_path', 123);
+    }
+
+    public function testConstructorWithEmptyBasePath(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid base_path: must be a non-empty HTTPS URL');
+        new Client(['base_path' => '']);
+    }
+
+    public function testConstructorWithNonStringBasePath(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid base_path: must be a non-empty HTTPS URL');
+        new Client(['base_path' => null]);
+    }
+
+    public function testSetValidBasePath(): void
+    {
+        $client = new Client();
+        $validPath = 'https://impactco2.fr/api/v1/';
+        $client->setConfig('base_path', $validPath);
+        $this->assertSame($validPath, $client->getConfig('base_path'));
+    }
+
+    public function testGetConfigReturnsNullForUnknownKey(): void
+    {
+        $client = new Client();
+        $this->assertNull($client->getConfig('unknown_key'));
+    }
+
+    public function testExecuteWithInvalidJsonResponse(): void
+    {
+        $endpoint = $this->createStub(Endpoint::class);
+        $endpoint->method('getPath')->willReturn('transport?km=100');
+        $endpoint->method('transformResponse')->willReturnCallback(
+            static fn (array $raw): ApiResponse => new ApiResponse($raw['data'] ?? [], null)
+        );
+
+        $responseBody = $this->createStub(StreamInterface::class);
+        $responseBody->method('getContents')->willReturn('not-json');
+
+        $response = $this->createStub(ResponseInterface::class);
+        $response->method('getStatusCode')->willReturn(200);
+        $response->method('getBody')->willReturn($responseBody);
+
+        $httpClient = $this->createStub(ClientInterface::class);
+        $httpClient->method('request')->willReturn($response);
+
+        $client = new Client();
+        $client->setHttpClient($httpClient);
+
+        /** @var Endpoint $endpoint */
+        $result = $client->execute($endpoint);
+        $this->assertSame([], $result->getData());
+    }
+
+    public function testExecuteBuildsPathWithLanguage(): void
+    {
+        $endpoint = $this->createMock(Endpoint::class);
+        $endpoint->expects($this->once())
+            ->method('getPath')
+            ->with('es')
+            ->willReturn('transport?km=100&language=es');
+        $endpoint->method('transformResponse')->willReturn(new ApiResponse([], null));
+
+        $responseBody = $this->createStub(StreamInterface::class);
+        $responseBody->method('getContents')->willReturn(json_encode(['data' => []]));
+
+        $response = $this->createStub(ResponseInterface::class);
+        $response->method('getStatusCode')->willReturn(200);
+        $response->method('getBody')->willReturn($responseBody);
+
+        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient->expects($this->once())
+            ->method('request')
+            ->with(
+                'GET',
+                Client::API_BASE_PATH . 'transport?km=100&language=es',
+                $this->anything()
+            )
+            ->willReturn($response);
+
+        $client = new Client(['language' => 'es']);
+        $client->setHttpClient($httpClient);
+
+        /** @var Endpoint $endpoint */
+        $client->execute($endpoint);
+    }
+
+    public function testAddOptionsMergesCustomHeaders(): void
+    {
+        $client = new Client();
+        $result = $client->addOptions([
+            'headers' => [
+                'X-Custom' => 'value',
+            ],
+        ]);
+
+        $this->assertSame('value', $result['headers']['X-Custom']);
+        $this->assertSame('application/json', $result['headers']['Accept']);
+    }
+
+    public function testExecuteLogsOptionsWithoutAuthorizationWhenNoApiKey(): void
+    {
+        $endpoint = $this->createStub(Endpoint::class);
+        $endpoint->method('getPath')->willReturn('test_path');
+
+        $httpClient = $this->createStub(ClientInterface::class);
+        $httpClient->method('request')->willThrowException(new \RuntimeException('Connection refused'));
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())
+            ->method('error')
+            ->with(
+                'Error during request',
+                $this->callback(static function (array $context): bool {
+                    return !isset($context['options']['headers']['Authorization']);
+                })
+            );
+
+        $client = new Client(['logger' => $logger]);
+        $client->setHttpClient($httpClient);
+
+        $this->expectException(Exception::class);
+        /** @var Endpoint $endpoint */
+        $client->execute($endpoint);
+    }
+
+    public function testDefaultHttpClientUsesConfiguredBasePath(): void
+    {
+        $client = new Client();
+        $httpClient = $client->getHttpClient();
+        $this->assertInstanceOf(\GuzzleHttp\Client::class, $httpClient);
+
+        $config = $httpClient->getConfig();
+        $this->assertSame(Client::API_BASE_PATH, (string) $config['base_uri']);
+        $this->assertFalse($config['http_errors']);
+        $this->assertSame(30, $config['timeout']);
+        $this->assertSame(10, $config['connect_timeout']);
+    }
+
+    public function testApiConstants(): void
+    {
+        $this->assertSame('v1', Client::API_VERSION);
+        $this->assertSame('https://impactco2.fr/api/v1/', Client::API_BASE_PATH);
+    }
+
+    public function testExecuteNetworkErrorReturnsGenericMessage(): void
+    {
+        $endpoint = $this->createStub(Endpoint::class);
+        $endpoint->method('getPath')->willReturn('test_path');
+
+        $httpClient = $this->createStub(ClientInterface::class);
+        $httpClient->method('request')->willThrowException(new \RuntimeException('Connection refused'));
+
+        $client = new Client();
+        /** @var ClientInterface $httpClient */
+        $client->setHttpClient($httpClient);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Unable to connect to Impact CO2 API');
+        /** @var Endpoint $endpoint */
+        $client->execute($endpoint);
+    }
+
+    public function testExecuteLogsSanitizedOptionsOnError(): void
+    {
+        $endpoint = $this->createStub(Endpoint::class);
+        $endpoint->method('getPath')->willReturn('test_path');
+
+        $httpClient = $this->createStub(ClientInterface::class);
+        $httpClient->method('request')->willThrowException(new \RuntimeException('Connection refused'));
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())
+            ->method('error')
+            ->with(
+                'Error during request',
+                $this->callback(static function (array $context): bool {
+                    return ($context['options']['headers']['Authorization'] ?? null) === 'Bearer ***';
+                })
+            );
+
+        $client = new Client(['api_key' => 'secret-key', 'logger' => $logger]);
+        /** @var ClientInterface $httpClient */
+        $client->setHttpClient($httpClient);
+
+        $this->expectException(Exception::class);
+        /** @var Endpoint $endpoint */
+        $client->execute($endpoint);
+    }
+
     public function testLoggerIsSetAndUnset(): void
     {
         $config = ['logger' => $this->createStub(LoggerInterface::class)];
