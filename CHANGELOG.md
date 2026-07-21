@@ -2,6 +2,14 @@
 
 Tous les changements notables de ce projet sont documentés dans ce fichier.
 
+## [1.3.2] - 2026-07-21
+
+### Corrigé
+
+- **Sécurité** : mise à jour de `guzzlehttp/guzzle` (7.13.1 → 7.15.1), `guzzlehttp/promises` (2.5.0 → 2.5.1) et `guzzlehttp/psr7` (2.12.3 → 2.13.0) dans `composer.lock`.
+
+[1.3.2]: https://github.com/jokod/impactco2-php/compare/1.3.1...1.3.2
+
 ## [1.3.1] - 2026-07-02
 
 ### Corrigé
