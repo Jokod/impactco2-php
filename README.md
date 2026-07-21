@@ -143,28 +143,28 @@ TransportsEnum::TGV                      // TGV
 TransportsEnum::INTERCITY                // Intercités
 TransportsEnum::CAR                      // Voiture thermique
 TransportsEnum::ELECTRIC_CAR             // Voiture électrique
-TransportsEnum::BUS                      // Bus
+TransportsEnum::BUS                      // Autocar thermique
 TransportsEnum::THERMAL_BUS              // Bus thermique
 TransportsEnum::ELECTRIC_BUS             // Bus électrique
-TransportsEnum::GNV_BUS                  // Bus GNV
+TransportsEnum::GNV_BUS                  // Bus (GNV)
 TransportsEnum::TRAMWAY                  // Tramway
 TransportsEnum::METRO                    // Métro
-TransportsEnum::RER_TRANSILIEN           // RER/Transilien
+TransportsEnum::RER_TRANSILIEN           // RER ou Transilien
 TransportsEnum::TER                      // TER
-TransportsEnum::WALKING                  // Marche à pied
-TransportsEnum::BIKE                    // Vélo
+TransportsEnum::WALKING                  // Marche
+TransportsEnum::BIKE                     // Vélo
 TransportsEnum::SCOOTER                  // Scooter thermique
-TransportsEnum::ELECTRIC_SCOOTER         // Scooter électrique
-TransportsEnum::MOTORCYCLE               // Moto
-TransportsEnum::ELECTRIC_BIKE            // Vélo électrique
-TransportsEnum::CARPOOLING_1             // Covoiturage 1 personne
-TransportsEnum::CARPOOLING_2             // Covoiturage 2 personnes
-TransportsEnum::CARPOOLING_3             // Covoiturage 3 personnes
-TransportsEnum::CARPOOLING_4             // Covoiturage 4 personnes
-TransportsEnum::ELECTRIC_CARPOOLING_1    // Covoiturage électrique 1 personne
-TransportsEnum::ELECTRIC_CARPOOLING_2    // Covoiturage électrique 2 personnes
-TransportsEnum::ELECTRIC_CARPOOLING_3    // Covoiturage électrique 3 personnes
-TransportsEnum::ELECTRIC_CARPOOLING_4    // Covoiturage électrique 4 personnes
+TransportsEnum::ELECTRIC_SCOOTER         // Trottinette à assistance électrique
+TransportsEnum::MOTORCYCLE               // Moto thermique (> 250 cm³)
+TransportsEnum::ELECTRIC_BIKE            // Vélo à assistance électrique
+TransportsEnum::CARPOOLING_1             // Covoiturage thermique (2 personnes)
+TransportsEnum::CARPOOLING_2             // Covoiturage thermique (3 personnes)
+TransportsEnum::CARPOOLING_3             // Covoiturage thermique (4 personnes)
+TransportsEnum::CARPOOLING_4             // Covoiturage thermique (5 personnes)
+TransportsEnum::ELECTRIC_CARPOOLING_1    // Covoiturage électrique (2 personnes)
+TransportsEnum::ELECTRIC_CARPOOLING_2    // Covoiturage électrique (3 personnes)
+TransportsEnum::ELECTRIC_CARPOOLING_3    // Covoiturage électrique (4 personnes)
+TransportsEnum::ELECTRIC_CARPOOLING_4    // Covoiturage électrique (5 personnes)
 TransportsEnum::CAMPER_VAN               // Camping-car
 TransportsEnum::LIGHT_MOTORCYCLE         // Moto thermique (<= 250 cm³)
 TransportsEnum::ELECTRIC_MOPED           // Scooter électrique
@@ -205,6 +205,7 @@ HeaterEnum::PELLET_STOVE_HEATING     // Poêle à granulés
 HeaterEnum::WOOD_STOVE_HEATING       // Poêle à bois
 HeaterEnum::DISTRICT_HEATING         // Réseau de chaleur
 HeaterEnum::PELLET_BOILER_HEATING    // Chaudière à granulés
+HeaterEnum::WOOD_BOILER_HEATING      // Chaudière à bûches
 ```
 
 ### 3. Fruits et légumes

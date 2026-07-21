@@ -2,6 +2,20 @@
 
 Tous les changements notables de ce projet sont documentés dans ce fichier.
 
+## [1.3.3] - 2026-07-21
+
+### Ajouté
+
+- **HeaterEnum** : nouveau type `WOOD_BOILER_HEATING` (9) « Chauffage avec une chaudière à bûches », aligné sur l'API `/chauffage`.
+- **Skill Cursor** : `verify-impactco2-api` pour auditer la parité avec l'OpenAPI et l'API live Impact CO₂.
+
+### Modifié
+
+- **TransportsEnum** : libellés alignés sur la doc API (ex. trottinette électrique, covoiturage N personnes, voiture thermique).
+- **README** : documentation du type « chaudière à bûches » et des libellés transport.
+
+[1.3.3]: https://github.com/jokod/impactco2-php/compare/1.3.2...1.3.3
+
 ## [1.3.2] - 2026-07-21
 
 ### Corrigé
