@@ -23,7 +23,6 @@ class TransportEndpoint extends Endpoint
      * @param int|null $occupencyRate The occupancy rate of the vehicle (1 to 11)
      * @param int|null $includeConstruction Include the construction of the vehicle
      * @param int|null $ignoreRadiativeForcing Ignore the radiative forcing of the plane
-     * @param int|null $numberOfPassenger Number of passengers for the carpool computation (0 to 10)
      */
     public function __construct(
         int $distance,
@@ -32,7 +31,6 @@ class TransportEndpoint extends Endpoint
         ?int $occupencyRate = 1,
         ?int $includeConstruction = 0,
         ?int $ignoreRadiativeForcing = 0,
-        ?int $numberOfPassenger = null,
     ) {
         if ($distance <= 0) {
             throw new InvalidArgumentException('Distance must be a positive integer');
@@ -60,10 +58,6 @@ class TransportEndpoint extends Endpoint
             throw new InvalidArgumentException('Include construction must be 0 or 1');
         }
 
-        if (!is_null($numberOfPassenger) && ($numberOfPassenger < 0 || $numberOfPassenger > 10)) {
-            throw new InvalidArgumentException('Number of passengers must be between 0 and 10');
-        }
-
         parent::__construct(self::ENDPOINT, [], [
             'km'                     => $distance,
             'displayAll'             => (int) $displayAll,
@@ -71,7 +65,6 @@ class TransportEndpoint extends Endpoint
             'ignoreRadiativeForcing' => $ignoreRadiativeForcing,
             'occupencyRate'          => $occupencyRate,
             'includeConstruction'    => $includeConstruction,
-            'numberOfPassenger'      => $numberOfPassenger,
             'language'               => null,
         ]);
     }

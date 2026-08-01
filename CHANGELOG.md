@@ -2,6 +2,19 @@
 
 Tous les changements notables de ce projet sont documentés dans ce fichier.
 
+## [1.3.4] - 2026-08-01
+
+### Supprimé
+
+- **TransportsEnum** : constante `GNV_BUS` (ID 21) retirée — mode absent de l'OpenAPI et de l'API live `/transport`.
+- **TransportEndpoint** : paramètre `numberOfPassenger` retiré — absent de l'OpenAPI `/transport` (alignement strict sur la doc API).
+
+### Ajouté
+
+- **Makefile** : cible `make verify-api` pour lancer le contrôle de parité Impact CO₂.
+
+[1.3.4]: https://github.com/jokod/impactco2-php/compare/1.3.3...1.3.4
+
 ## [1.3.3] - 2026-07-21
 
 ### Ajouté

@@ -23,7 +23,6 @@ class TransportsEnum
     public const TER = 15;
     public const ELECTRIC_BUS = 16;
     public const ELECTRIC_SCOOTER = 17;
-    public const GNV_BUS = 21;
     public const CARPOOLING_1 = 22;
     public const CARPOOLING_2 = 23;
     public const CARPOOLING_3 = 24;
@@ -62,7 +61,6 @@ class TransportsEnum
         self::TER                   => 'TER',
         self::ELECTRIC_BUS          => 'Bus électrique',
         self::ELECTRIC_SCOOTER      => 'Trottinette à assistance électrique',
-        self::GNV_BUS               => 'Bus (GNV)',
         self::CARPOOLING_1          => 'Covoiturage thermique (2 personnes)',
         self::CARPOOLING_2          => 'Covoiturage thermique (3 personnes)',
         self::CARPOOLING_3          => 'Covoiturage thermique (4 personnes)',
@@ -132,8 +130,6 @@ class TransportsEnum
                 return '🚌⚡';
             case self::ELECTRIC_SCOOTER:
                 return '🛴⚡';
-            case self::GNV_BUS:
-                return '🚌';
             case self::CARPOOLING_1:
                 return '🚗👥';
             case self::CARPOOLING_2:
@@ -190,7 +186,6 @@ class TransportsEnum
             self::TER,
             self::ELECTRIC_BUS,
             self::ELECTRIC_SCOOTER,
-            self::GNV_BUS,
             self::CARPOOLING_1,
             self::CARPOOLING_2,
             self::CARPOOLING_3,

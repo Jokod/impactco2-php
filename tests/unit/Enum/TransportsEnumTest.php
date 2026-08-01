@@ -37,7 +37,6 @@ class TransportsEnumTest extends TestCase
         $this->assertSame('🚆', TransportsEnum::getEmoji(TransportsEnum::TER));
         $this->assertSame('🚌⚡', TransportsEnum::getEmoji(TransportsEnum::ELECTRIC_BUS));
         $this->assertSame('🛴⚡', TransportsEnum::getEmoji(TransportsEnum::ELECTRIC_SCOOTER));
-        $this->assertSame('🚌', TransportsEnum::getEmoji(TransportsEnum::GNV_BUS));
         $this->assertSame('🚗👥', TransportsEnum::getEmoji(TransportsEnum::CARPOOLING_1));
         $this->assertSame('🚗👥', TransportsEnum::getEmoji(TransportsEnum::CARPOOLING_2));
         $this->assertSame('🚗👥', TransportsEnum::getEmoji(TransportsEnum::CARPOOLING_3));
@@ -76,7 +75,6 @@ class TransportsEnumTest extends TestCase
             TransportsEnum::TER,
             TransportsEnum::ELECTRIC_BUS,
             TransportsEnum::ELECTRIC_SCOOTER,
-            TransportsEnum::GNV_BUS,
             TransportsEnum::CARPOOLING_1,
             TransportsEnum::CARPOOLING_2,
             TransportsEnum::CARPOOLING_3,

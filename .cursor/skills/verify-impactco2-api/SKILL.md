@@ -28,6 +28,12 @@ Compare la librairie locale `jokod/impactco2-php` à la source de vérité :
 2. Exécuter le script de parité (obligatoire, ne pas réinventer le check à la main) :
 
 ```bash
+make verify-api
+```
+
+Équivalent direct :
+
+```bash
 python3 .cursor/skills/verify-impactco2-api/scripts/verify_api_parity.py --root .
 ```
 
@@ -49,7 +55,7 @@ python3 .cursor/skills/verify-impactco2-api/scripts/verify_api_parity.py --root 
    - Mettre à jour tests, `README.md` et `CHANGELOG.md` (version courante)
    - Relancer le script jusqu'à `exit 0`
 
-5. Si seulement des **warnings / notes** (ex. OpenAPI en retard sur `numberOfPassenger`, libellés) :
+5. Si seulement des **warnings / notes** (libellés, etc.) :
    - Les signaler dans le rapport
    - Corriger seulement si c'est un vrai décalage fonctionnel ou de libellés enums
 
@@ -65,8 +71,8 @@ python3 .cursor/skills/verify-impactco2-api/scripts/verify_api_parity.py --root 
 | Thématiques (IDs + slugs) | OpenAPI + live `/thematiques` |
 | Types chauffage (IDs) | GitHub `chauffage.ts` (fallback probe API) |
 | Modes transport `< 100` | OpenAPI |
-| Params query transport | OpenAPI + param live connu `numberOfPassenger` |
-| Smoke live | `GET /transport?km=100&transports=4&numberOfPassenger=1` |
+| Params query transport | OpenAPI (alignement strict) |
+| Smoke live | `GET /transport?km=100&transports=4` |
 
 ## Rapport à l'utilisateur (français)
 
@@ -92,7 +98,7 @@ Ne pas dump le JSON brut sauf si demandé. Citer la doc : [API Impact CO₂](htt
 
 ## Pièges connus
 
-- La **Swagger annotée** peut être en retard sur le code Zod des routes (ex. `numberOfPassenger` accepté live mais absent de `/doc`).
+- La source de vérité des paramètres est l'**OpenAPI** (`/api/v1/doc`), pas les params acceptés en live hors doc.
 - `/chauffage` ne renvoie pas les `id` dans `data` → le script lit les IDs depuis le dépôt ADEME ou par sondage `?chauffages=N`.
 - Les IDs transport `100–204` sont des variantes détaillées : la lib les accepte comme entiers positifs sans toutes les constantes dans `TransportsEnum`.
 
