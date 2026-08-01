@@ -128,8 +128,7 @@ $endpoint = new TransportEndpoint(
     displayAll: false,                      // Afficher tous les transports pertinents
     occupencyRate: 2,                       // Taux d'occupation du véhicule (1 à 11)
     includeConstruction: 1,                 // Inclure les émissions de construction (0 ou 1)
-    ignoreRadiativeForcing: 0,              // Ignorer le forçage radiatif avion (0 ou 1)
-    numberOfPassenger: 2                    // Nombre de passagers pour le covoiturage (0 à 10)
+    ignoreRadiativeForcing: 0               // Ignorer le forçage radiatif avion (0 ou 1)
 );
 ```
 
@@ -146,7 +145,6 @@ TransportsEnum::ELECTRIC_CAR             // Voiture électrique
 TransportsEnum::BUS                      // Autocar thermique
 TransportsEnum::THERMAL_BUS              // Bus thermique
 TransportsEnum::ELECTRIC_BUS             // Bus électrique
-TransportsEnum::GNV_BUS                  // Bus (GNV)
 TransportsEnum::TRAMWAY                  // Tramway
 TransportsEnum::METRO                    // Métro
 TransportsEnum::RER_TRANSILIEN           // RER ou Transilien

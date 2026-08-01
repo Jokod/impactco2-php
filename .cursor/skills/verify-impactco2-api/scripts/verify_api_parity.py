@@ -394,13 +394,11 @@ def main() -> int:
             )
         )
 
-    # Transport query params: OpenAPI may omit numberOfPassenger (implemented in zod)
+    # Transport query params — strict OpenAPI alignment
     transport_endpoint = endpoints_dir / "TransportEndpoint.php"
     lib_params = transport_query_params(transport_endpoint) - {"language"}
     api_params = openapi_transport_params(openapi) - {"language"}
-    # Known live param not always in swagger annotations
-    known_live_only = {"numberOfPassenger"}
-    missing_in_lib = (api_params | known_live_only) - lib_params
+    missing_in_lib = api_params - lib_params
     if missing_in_lib:
         issues.append(
             issue(
@@ -409,20 +407,23 @@ def main() -> int:
                 f"Paramètres transport manquants dans la lib: {sorted(missing_in_lib)}",
             )
         )
-    swagger_lag = lib_params - api_params
-    if swagger_lag:
-        notes.append(
-            "Paramètres présents dans la lib mais absents de l'OpenAPI "
-            f"(souvent doc en retard): {sorted(swagger_lag)}"
+    extra_in_lib = lib_params - api_params
+    if extra_in_lib:
+        issues.append(
+            issue(
+                "error",
+                "transport_params_extra",
+                f"Paramètres transport absents de l'OpenAPI: {sorted(extra_in_lib)}",
+            )
         )
 
     # Live smoke: transport
     try:
-        smoke = fetch_json(f"{API_BASE}/transport?km=100&transports=4&numberOfPassenger=1")
+        smoke = fetch_json(f"{API_BASE}/transport?km=100&transports=4")
         if not smoke.get("data"):
             issues.append(issue("warn", "transport_smoke_empty", "Smoke /transport a renvoyé data vide"))
         else:
-            notes.append("Smoke /transport?km=100&transports=4&numberOfPassenger=1 OK")
+            notes.append("Smoke /transport?km=100&transports=4 OK")
     except Exception as exc:  # noqa: BLE001
         issues.append(issue("error", "transport_smoke_failed", f"Smoke /transport échoué: {exc}"))
 

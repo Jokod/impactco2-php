@@ -71,19 +71,6 @@ class TransportEndpointTest extends TestCase
         $this->assertInstanceOf(TransportEndpoint::class, $endpoint);
     }
 
-    public function testConstructorWithValidNumberOfPassenger(): void
-    {
-        $endpoint = new TransportEndpoint(100, [TransportsEnum::CAR], false, 1, 0, 0, 3);
-        $this->assertInstanceOf(TransportEndpoint::class, $endpoint);
-    }
-
-    public function testConstructorWithInvalidNumberOfPassenger(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Number of passengers must be between 0 and 10');
-        new TransportEndpoint(100, [TransportsEnum::CAR], false, 1, 0, 0, 11);
-    }
-
     public function testConstructorWithInvalidIgnoreRadiativeForcing(): void
     {
         $this->expectException(InvalidArgumentException::class);
