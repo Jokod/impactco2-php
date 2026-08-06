@@ -132,7 +132,7 @@ $endpoint = new TransportEndpoint(
 );
 ```
 
-> **Identifiants de transport** : au-delà des constantes de `TransportsEnum`, l'endpoint accepte tout identifiant entier positif renvoyé par l'API, y compris les variantes détaillées (ex. `100` à `204` : voitures par taille/carburant, covoiturages détaillés, etc.). Vous pouvez donc passer directement ces IDs dans `transports`.
+> **Identifiants de transport** : `TransportsEnum` couvre l'intégralité des IDs exposés par l'OpenAPI, y compris les variantes détaillées `100`–`204` (voitures par taille/carburant/occupation, hybrides). Ex. : `TransportsEnum::CAR_SMALL_PETROL` (100), `TransportsEnum::CAR_HYBRID_5` (204).
 
 #### Transports disponibles
 
@@ -168,6 +168,10 @@ TransportsEnum::LIGHT_MOTORCYCLE         // Moto thermique (<= 250 cm³)
 TransportsEnum::ELECTRIC_MOPED           // Scooter électrique
 TransportsEnum::CARGO_BIKE               // Vélo cargo triporteur
 TransportsEnum::VAN                      // Van
+TransportsEnum::CAR_SMALL_PETROL         // Voiture - Petite - Essence (100)
+TransportsEnum::CAR_HYBRID               // Voiture hybride (200)
+TransportsEnum::CAR_HYBRID_5             // Voiture hybride (5 personnes) (204)
+// … toutes les variantes 100–204 : TransportsEnum::toArray()
 ```
 
 ### 2. Chauffage

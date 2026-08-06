@@ -34,13 +34,13 @@ make verify-api
 Équivalent direct :
 
 ```bash
-python3 .cursor/skills/verify-impactco2-api/scripts/verify_api_parity.py --root .
+python3 scripts/verify_api_parity.py --root .
 ```
 
 Pour un rapport machine :
 
 ```bash
-python3 .cursor/skills/verify-impactco2-api/scripts/verify_api_parity.py --root . --json
+python3 scripts/verify_api_parity.py --root . --json
 ```
 
 3. Interpréter le code de sortie :
@@ -63,16 +63,14 @@ python3 .cursor/skills/verify-impactco2-api/scripts/verify_api_parity.py --root 
 
 | Contrôle | Source |
 |----------|--------|
-| Liste des paths `/alimentation`, `/chauffage`, `/fruitsetlegumes`, `/thematiques`, `/thematiques/ecv/{id}`, `/transport` | OpenAPI |
-| `ENDPOINT` des classes PHP | `src/Endpoints/` |
-| Langues `fr`/`en`/`es` | OpenAPI |
-| Catégories alimentation `group`/`rayon`/`popularity` | OpenAPI |
-| IDs fruits & légumes | OpenAPI |
-| Thématiques (IDs + slugs) | OpenAPI + live `/thematiques` |
-| Types chauffage (IDs) | GitHub `chauffage.ts` (fallback probe API) |
-| Modes transport `< 100` | OpenAPI |
-| Params query transport | OpenAPI (alignement strict) |
-| Smoke live | `GET /transport?km=100&transports=4` |
+| Paths OpenAPI vs `ENDPOINT` (templates `{id}` inclus) | OpenAPI + scan `src/Endpoints/` |
+| Params query | OpenAPI vs `parent::__construct` |
+| Enums (valeurs) | matching auto OpenAPI ↔ `src/Enum/*.php` |
+| Slugs thématiques | live `/thematiques` + map slug enum |
+| Types chauffage | GitHub `chauffage.ts` (enrichissement si OpenAPI en retard) |
+| Transports (tous les IDs OpenAPI, y compris ≥100) | OpenAPI ↔ `TransportsEnum` |
+| Smoke live (URL auto) | tous les paths OpenAPI |
+| Schémas entités | `Entity::*::fromArray` découvert via endpoints |
 
 ## Rapport à l'utilisateur (français)
 
@@ -100,7 +98,7 @@ Ne pas dump le JSON brut sauf si demandé. Citer la doc : [API Impact CO₂](htt
 
 - La source de vérité des paramètres est l'**OpenAPI** (`/api/v1/doc`), pas les params acceptés en live hors doc.
 - `/chauffage` ne renvoie pas les `id` dans `data` → le script lit les IDs depuis le dépôt ADEME ou par sondage `?chauffages=N`.
-- Les IDs transport `100–204` sont des variantes détaillées : la lib les accepte comme entiers positifs sans toutes les constantes dans `TransportsEnum`.
+- Les IDs transport `100–204` sont des variantes détaillées : elles sont toutes dans `TransportsEnum` (ex. `CAR_SMALL_PETROL`, `CAR_HYBRID_5`).
 
 ## Hors scope
 

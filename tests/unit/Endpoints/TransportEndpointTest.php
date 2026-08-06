@@ -59,16 +59,23 @@ class TransportEndpointTest extends TestCase
         new TransportEndpoint(100, [0]);
     }
 
-    public function testConstructorAcceptsNewAndDetailedTransportIdentifiers(): void
+    public function testConstructorAcceptsDetailedTransportIdentifiers(): void
     {
         $transports = [
             TransportsEnum::CAMPER_VAN,
             TransportsEnum::VAN,
-            100,
-            204,
+            TransportsEnum::CAR_SMALL_PETROL,
+            TransportsEnum::CAR_HYBRID_5,
         ];
         $endpoint = new TransportEndpoint(100, $transports);
         $this->assertInstanceOf(TransportEndpoint::class, $endpoint);
+    }
+
+    public function testConstructorRejectsUnknownTransportIdentifier(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid transport identifier: 999');
+        new TransportEndpoint(100, [999]);
     }
 
     public function testConstructorWithInvalidIgnoreRadiativeForcing(): void
