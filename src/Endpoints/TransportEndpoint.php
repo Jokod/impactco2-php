@@ -6,6 +6,7 @@ namespace Jokod\Impactco2Php\Endpoints;
 
 use Jokod\Impactco2Php\ApiResponse;
 use Jokod\Impactco2Php\Entity\Transport;
+use Jokod\Impactco2Php\Enum\TransportsEnum;
 use Jokod\Impactco2Php\Exceptions\InvalidArgumentException;
 
 class TransportEndpoint extends Endpoint
@@ -17,8 +18,7 @@ class TransportEndpoint extends Endpoint
      *
      * @param int $distance The distance in kilometers (km)
      *                      Example: below 500km the data of the plane will not be visible.
-     * @param int[] $transports List of ids of the transports. Any positive identifier exposed by the API is accepted,
-     *                          including the detailed variants (e.g. 100-204) not listed in TransportsEnum.
+     * @param int[] $transports List of ids of the transports (TransportsEnum — tous les IDs OpenAPI, y compris 100–204)
      * @param bool|null $displayAll Return the emission calculation for all available transports. Otherwise return only those that make sense for the given distance
      * @param int|null $occupencyRate The occupancy rate of the vehicle (1 to 11)
      * @param int|null $includeConstruction Include the construction of the vehicle
@@ -42,7 +42,7 @@ class TransportEndpoint extends Endpoint
             }
 
             foreach ($transports as $transport) {
-                if (!is_int($transport) || $transport <= 0) {
+                if (!in_array($transport, TransportsEnum::toArray(), true)) {
                     throw new InvalidArgumentException('Invalid transport identifier: ' . $transport);
                 }
             }

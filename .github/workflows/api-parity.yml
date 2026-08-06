@@ -1,0 +1,177 @@
+name: Check Impact CO₂ API parity
+
+on:
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  verify-api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - id: verify
+        run: |
+          set -uo pipefail
+          set +e
+          python3 scripts/verify_api_parity.py --root . 2>&1 | tee report.txt
+          code=${PIPESTATUS[0]}
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          case "$code" in
+            0) echo "result=aligned" >> "$GITHUB_OUTPUT" ;;
+            1) echo "result=drift" >> "$GITHUB_OUTPUT" ;;
+            *) echo "result=technical" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - name: Open drift issue if new
+        if: steps.verify.outputs.result == 'drift'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const crypto = require('crypto');
+            const fs = require('fs');
+            const report = fs.existsSync('report.txt')
+              ? fs.readFileSync('report.txt', 'utf8')
+              : 'Rapport indisponible.';
+            const marker = '<!-- api-parity-drift -->';
+            const label = 'api-drift';
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+
+            const errorsBlock = (report.match(/## Erreurs\n([\s\S]*?)(?=\n## |\s*$)/) || [])[1] || report;
+            const fingerprint = crypto
+              .createHash('sha256')
+              .update(errorsBlock.trim())
+              .digest('hex')
+              .slice(0, 16);
+            const fpMarker = `<!-- api-parity-fp:${fingerprint} -->`;
+
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: label,
+              per_page: 100,
+            });
+
+            async function closeSuperseded(exceptNumber = null) {
+              for (const issue of issues) {
+                if (exceptNumber && issue.number === exceptNumber) continue;
+                if (!(issue.body || '').includes(marker)) continue;
+                if ((issue.body || '').includes(fpMarker)) continue;
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `Drift obsolète — remplacé par le fingerprint \`${fingerprint}\` ([run](${runUrl})).`,
+                });
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed',
+                });
+              }
+            }
+
+            const known = issues.find((issue) => (issue.body || '').includes(fpMarker));
+            if (known) {
+              await closeSuperseded(known.number);
+              core.info(`Drift déjà connu (#${known.number}), pas de notif`);
+              return;
+            }
+
+            try {
+              await github.rest.issues.getLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: label,
+              });
+            } catch (error) {
+              if (error.status === 404) {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label,
+                  color: 'D93F0B',
+                  description: 'Écarts entre impactco2-php et l’API Impact CO₂',
+                });
+              } else {
+                throw error;
+              }
+            }
+
+            const { data: repo } = await github.rest.repos.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            const assignees = repo.owner?.type === 'User' ? [repo.owner.login] : [];
+
+            await closeSuperseded();
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Écarts détectés — API Impact CO₂ (${fingerprint})`,
+              body: `${marker}
+            ${fpMarker}
+            ## Écarts API Impact CO₂
+
+            Détectés par le workflow [Check Impact CO₂ API parity](${runUrl}).
+
+            \`\`\`
+            ${report}
+            \`\`\`
+            `,
+              labels: [label],
+              assignees,
+            });
+
+      - name: Close drift issues when aligned
+        if: steps.verify.outputs.result == 'aligned'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- api-parity-drift -->';
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'api-drift',
+              per_page: 100,
+            });
+
+            for (const issue of issues) {
+              if (!(issue.body || '').includes(marker)) {
+                continue;
+              }
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `Aligné de nouveau ([run](${runUrl})).`,
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed',
+              });
+            }
+
+      - name: Fail if not aligned
+        if: steps.verify.outputs.result != 'aligned'
+        run: |
+          if [[ "${{ steps.verify.outputs.result }}" == "drift" ]]; then
+            echo "Écarts API détectés (exit ${{ steps.verify.outputs.exit_code }})."
+          else
+            echo "Échec technique (exit ${{ steps.verify.outputs.exit_code }}). Pas d'issue créée."
+          fi
+          exit 1

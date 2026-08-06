@@ -45,4 +45,4 @@ test-coverage: ## Run tests with coverage
 
 ## —— Impact CO₂ API 🌍 ————————————————————————————————————————————————————————
 verify-api: ## Verify library parity with Impact CO₂ OpenAPI + live API
-	python3 .cursor/skills/verify-impactco2-api/scripts/verify_api_parity.py --root .
+	python3 scripts/verify_api_parity.py --root .

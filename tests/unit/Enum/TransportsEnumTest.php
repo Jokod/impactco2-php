@@ -14,6 +14,8 @@ class TransportsEnumTest extends TestCase
         $this->assertSame('Marche', TransportsEnum::getName(TransportsEnum::WALKING));
         $this->assertSame('Camping-car', TransportsEnum::getName(TransportsEnum::CAMPER_VAN));
         $this->assertSame('Van', TransportsEnum::getName(TransportsEnum::VAN));
+        $this->assertSame('Voiture - Petite - Essence', TransportsEnum::getName(TransportsEnum::CAR_SMALL_PETROL));
+        $this->assertSame('Voiture hybride (5 personnes)', TransportsEnum::getName(TransportsEnum::CAR_HYBRID_5));
         $this->assertSame('Non défini', TransportsEnum::getName(null));
         $this->assertSame('Non défini', TransportsEnum::getName(999));
     }
@@ -51,45 +53,19 @@ class TransportsEnumTest extends TestCase
         $this->assertSame('🛵⚡', TransportsEnum::getEmoji(TransportsEnum::ELECTRIC_MOPED));
         $this->assertSame('🚲', TransportsEnum::getEmoji(TransportsEnum::CARGO_BIKE));
         $this->assertSame('🚐', TransportsEnum::getEmoji(TransportsEnum::VAN));
+        $this->assertSame('🚗', TransportsEnum::getEmoji(TransportsEnum::CAR_SMALL_PETROL));
+        $this->assertSame('🚗🔋', TransportsEnum::getEmoji(TransportsEnum::CAR_HYBRID));
         $this->assertSame('❓', TransportsEnum::getEmoji(null));
         $this->assertSame('❓', TransportsEnum::getEmoji(999));
     }
 
-    public function testToArray(): void
+    public function testToArrayCoversAllOpenApiIds(): void
     {
-        $expected = [
-            TransportsEnum::PLANE,
-            TransportsEnum::TGV,
-            TransportsEnum::INTERCITY,
-            TransportsEnum::CAR,
-            TransportsEnum::ELECTRIC_CAR,
-            TransportsEnum::BUS,
-            TransportsEnum::BIKE,
-            TransportsEnum::ELECTRIC_BIKE,
-            TransportsEnum::THERMAL_BUS,
-            TransportsEnum::TRAMWAY,
-            TransportsEnum::METRO,
-            TransportsEnum::SCOOTER,
-            TransportsEnum::MOTORCYCLE,
-            TransportsEnum::RER_TRANSILIEN,
-            TransportsEnum::TER,
-            TransportsEnum::ELECTRIC_BUS,
-            TransportsEnum::ELECTRIC_SCOOTER,
-            TransportsEnum::CARPOOLING_1,
-            TransportsEnum::CARPOOLING_2,
-            TransportsEnum::CARPOOLING_3,
-            TransportsEnum::CARPOOLING_4,
-            TransportsEnum::ELECTRIC_CARPOOLING_1,
-            TransportsEnum::ELECTRIC_CARPOOLING_2,
-            TransportsEnum::ELECTRIC_CARPOOLING_3,
-            TransportsEnum::ELECTRIC_CARPOOLING_4,
-            TransportsEnum::WALKING,
-            TransportsEnum::CAMPER_VAN,
-            TransportsEnum::LIGHT_MOTORCYCLE,
-            TransportsEnum::ELECTRIC_MOPED,
-            TransportsEnum::CARGO_BIKE,
-            TransportsEnum::VAN,
-        ];
-        $this->assertSame($expected, TransportsEnum::toArray());
+        $ids = TransportsEnum::toArray();
+        $this->assertCount(136, $ids);
+        $this->assertContains(TransportsEnum::PLANE, $ids);
+        $this->assertContains(TransportsEnum::CAR_SMALL_PETROL, $ids);
+        $this->assertContains(TransportsEnum::CAR_HYBRID_5, $ids);
+        $this->assertSame($ids, array_values(array_unique($ids)));
     }
 }
