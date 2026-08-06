@@ -2,16 +2,31 @@
 
 Tous les changements notables de ce projet sont documentés dans ce fichier.
 
+## [1.3.5] - 2026-08-06
+
+### Ajouté
+
+- **TransportsEnum** : constantes pour toutes les variantes détaillées OpenAPI `100–204` (voitures par taille/carburant/occupation, hybrides).
+- **CI** : workflow quotidien `api-parity` (parité lib ↔ OpenAPI live, issues GitHub en cas de drift).
+- **Script** : `scripts/verify_api_parity.py` (découverte dynamique paths, params, enums, smokes).
+
+### Modifié
+
+- **TransportEndpoint** : validation des IDs via `TransportsEnum::toArray()` (couverture complète de l'OpenAPI).
+- **README** : documentation des constantes transport détaillées.
+
+[1.3.5]: https://github.com/jokod/impactco2-php/compare/1.3.4...1.3.5
+
 ## [1.3.4] - 2026-08-01
+
+### Ajouté
+
+- **Makefile** : cible `make verify-api` pour lancer le contrôle de parité Impact CO₂.
 
 ### Supprimé
 
 - **TransportsEnum** : constante `GNV_BUS` (ID 21) retirée — mode absent de l'OpenAPI et de l'API live `/transport`.
 - **TransportEndpoint** : paramètre `numberOfPassenger` retiré — absent de l'OpenAPI `/transport` (alignement strict sur la doc API).
-
-### Ajouté
-
-- **Makefile** : cible `make verify-api` pour lancer le contrôle de parité Impact CO₂.
 
 [1.3.4]: https://github.com/jokod/impactco2-php/compare/1.3.3...1.3.4
 
