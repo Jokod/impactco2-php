@@ -14,6 +14,7 @@ import argparse
 import json
 import re
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -32,6 +33,20 @@ def fetch_json(url: str, timeout: int = 30) -> Any:
     req = urllib.request.Request(url, headers={"Accept": "application/json", "User-Agent": "impactco2-php-verify/1.0"})
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         return json.loads(resp.read().decode("utf-8"))
+
+
+def fetch_json_retry(url: str, timeout: int = 45, attempts: int = 3, delay: float = 2.0) -> Any:
+    """Fetch JSON with retries for transient network/timeouts."""
+    last_exc: Exception | None = None
+    for attempt in range(1, attempts + 1):
+        try:
+            return fetch_json(url, timeout=timeout)
+        except Exception as exc:  # noqa: BLE001
+            last_exc = exc
+            if attempt < attempts:
+                time.sleep(delay * attempt)
+    assert last_exc is not None
+    raise last_exc
 
 
 def fetch_text(url: str, timeout: int = 30) -> str:
@@ -437,7 +452,7 @@ def main() -> int:
     notes: list[str] = []
 
     try:
-        openapi = fetch_json(OPENAPI_URL)
+        openapi = fetch_json_retry(OPENAPI_URL)
     except Exception as exc:  # noqa: BLE001
         print(f"ERROR: cannot fetch OpenAPI ({OPENAPI_URL}): {exc}", file=sys.stderr)
         return 2
@@ -619,7 +634,7 @@ def main() -> int:
         url = build_smoke_url(API_BASE, openapi_path, openapi)
         smoked_paths.add(openapi_path)
         try:
-            payload = fetch_json(url)
+            payload = fetch_json_retry(url)
         except Exception as exc:  # noqa: BLE001
             smoke_failures.append(f"{openapi_path}: {exc}")
             continue
