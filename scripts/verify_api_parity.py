@@ -521,32 +521,68 @@ def main() -> int:
                 )
             )
 
-    # Enum ↔ OpenAPI param value sets (dynamic matching)
+    # Enum ↔ OpenAPI param value sets (dynamic matching).
+    # OpenAPI is the sole source of truth for enum comparison — never enrich/replace
+    # OpenAPI values with GitHub or live probes (that hid heater IDs 8–9 drift).
     enums = load_all_enums(enum_dir)
     param_sets = collect_openapi_param_sets(openapi)
 
-    # Enrich chauffage IDs from GitHub when OpenAPI lags
-    heater_enrichment: set[int] | None = None
+    # Secondary: detect OpenAPI vs upstream (GitHub / live probe) drift for chauffage
+    heater_upstream: set[int] | None = None
     try:
         heater_ids = parse_chauffage_ids_from_ts(fetch_text(GITHUB_CHAUFFAGE))
-        heater_enrichment = set(heater_ids.keys())
-        notes.append(f"Chauffage IDs enrichis via GitHub develop ({len(heater_ids)} types)")
+        heater_upstream = set(heater_ids.keys())
+        notes.append(f"Chauffage IDs GitHub develop ({len(heater_ids)} types): {sorted(heater_ids)}")
     except Exception:
         try:
             heater_ids = probe_heater_ids()
-            heater_enrichment = set(heater_ids.keys())
-            notes.append(f"Chauffage IDs sondés via API ({len(heater_ids)} types)")
+            heater_upstream = set(heater_ids.keys())
+            notes.append(f"Chauffage IDs sondés via API ({len(heater_ids)} types): {sorted(heater_ids)}")
         except Exception as exc:  # noqa: BLE001
-            issues.append(issue("warn", "heater_enrich_failed", f"Enrichissement chauffage impossible: {exc}"))
+            issues.append(
+                issue("warn", "heater_upstream_failed", f"Contrôle amont chauffage impossible: {exc}")
+            )
 
-    enriched_param_sets: list[tuple[str, str, set[Any]]] = []
+    openapi_heater_ids: set[int] = set()
     for path, name, values in param_sets:
-        if heater_enrichment and ("chauffage" in path or name == "chauffages"):
-            enriched_param_sets.append((path, name, set(heater_enrichment)))
-        else:
-            enriched_param_sets.append((path, name, values))
+        if "chauffage" in path or name == "chauffages":
+            for value in values:
+                if str(value).isdigit():
+                    openapi_heater_ids.add(int(value))
 
-    matches = match_enums_to_param_sets(enums, enriched_param_sets)
+    if heater_upstream is not None and openapi_heater_ids:
+        only_upstream = heater_upstream - openapi_heater_ids
+        only_openapi = openapi_heater_ids - heater_upstream
+        if only_upstream:
+            issues.append(
+                issue(
+                    "warn",
+                    "openapi_heater_lag",
+                    f"OpenAPI /chauffage?chauffages en retard vs GitHub/live: "
+                    f"IDs {sorted(only_upstream)} absents de l'OpenAPI "
+                    f"(la lib doit suivre l'OpenAPI, pas le dépôt amont)",
+                )
+            )
+        if only_openapi:
+            issues.append(
+                issue(
+                    "warn",
+                    "openapi_heater_stale",
+                    f"OpenAPI /chauffage?chauffages liste des IDs absents de GitHub/live: "
+                    f"{sorted(only_openapi)}",
+                )
+            )
+    elif heater_upstream is not None and not openapi_heater_ids:
+        issues.append(
+            issue(
+                "warn",
+                "openapi_heater_ids_unparsed",
+                "Impossible d'extraire les IDs chauffage depuis l'OpenAPI "
+                f"(amont: {sorted(heater_upstream)})",
+            )
+        )
+
+    matches = match_enums_to_param_sets(enums, param_sets)
     matched_enum_files = {m[0] for m in matches}
     for enum_file in sorted(enums):
         if enum_file not in matched_enum_files:
@@ -557,6 +593,12 @@ def main() -> int:
                     f"{enum_file}: aucun param OpenAPI automatiquement associé",
                 )
             )
+
+    def _sort_values(values: set[str]) -> list[str]:
+        return sorted(
+            values,
+            key=lambda x: (not str(x).isdigit(), int(x) if str(x).isdigit() else x),
+        )
 
     for enum_file, openapi_path, param_name, api_vals, lib_vals in matches:
         api_cmp = values_as_comparable(api_vals)
@@ -571,18 +613,20 @@ def main() -> int:
                 issue(
                     "error",
                     "enum_values_missing",
-                    f"{enum_file} vs {openapi_path}?{param_name}: valeurs API absentes de la lib: {sorted(missing, key=lambda x: (not str(x).isdigit(), int(x) if str(x).isdigit() else x))}",
+                    f"{enum_file} vs {openapi_path}?{param_name}: valeurs OpenAPI absentes de la lib: "
+                    f"{_sort_values(missing)}",
                 )
             )
         if extra:
             had_gap = True
-            # Extra lib values: warn (API may lag) except strict string enums like languages/categories
-            level = "error" if all(not str(v).isdigit() for v in extra) and len(api_vals) <= 10 else "warn"
+            # Always error: OpenAPI is the source of truth (numeric extras used to be warns
+            # and were masked further by GitHub enrichment of chauffage IDs).
             issues.append(
                 issue(
-                    level,
+                    "error",
                     "enum_values_extra",
-                    f"{enum_file} vs {openapi_path}?{param_name}: valeurs lib absentes de l'API: {sorted(extra, key=lambda x: (not str(x).isdigit(), int(x) if str(x).isdigit() else x))}",
+                    f"{enum_file} vs {openapi_path}?{param_name}: valeurs lib absentes de l'OpenAPI: "
+                    f"{_sort_values(extra)}",
                 )
             )
         if not had_gap:
