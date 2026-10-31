@@ -206,8 +206,6 @@ HeaterEnum::HEAT_PUMP_HEATING        // Pompe à chaleur
 HeaterEnum::PELLET_STOVE_HEATING     // Poêle à granulés
 HeaterEnum::WOOD_STOVE_HEATING       // Poêle à bois
 HeaterEnum::DISTRICT_HEATING         // Réseau de chaleur
-HeaterEnum::PELLET_BOILER_HEATING    // Chaudière à granulés
-HeaterEnum::WOOD_BOILER_HEATING      // Chaudière à bûches
 ```
 
 ### 3. Fruits et légumes

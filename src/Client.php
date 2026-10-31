@@ -86,21 +86,52 @@ class Client
         $path = $this->config['base_path'] . $endpoint->getPath($this->getLanguage());
 
         $options = $this->addOptions($options);
+        $maxAttempts = 3;
 
         try {
-            $response = $this->getHttpClient()->request('GET', $path, $options);
-            $content = json_decode($response->getBody()->getContents(), true, 512);
+            for ($attempt = 1; $attempt <= $maxAttempts; ++$attempt) {
+                try {
+                    $response = $this->getHttpClient()->request('GET', $path, $options);
+                    $rawBody = $response->getBody()->getContents();
+                    $statusCode = $response->getStatusCode();
+                    $content = json_decode($rawBody, true, 512);
 
-            if ($response->getStatusCode() !== 200) {
-                $errorMessage = 'Unknown error';
-                if (is_array($content)) {
-                    $errorMessage = $content['issues'] ?? $errorMessage;
+                    if ($statusCode === 200) {
+                        return $endpoint->transformResponse(\is_array($content) ? $content : []);
+                    }
+
+                    $errorMessage = $this->buildHttpErrorMessage($statusCode, $content, $rawBody);
+                    $exception = new Exception($errorMessage);
+
+                    if ($attempt < $maxAttempts && $this->isRetryableStatusCode($statusCode)) {
+                        $this->getLogger()->warning('Retrying Impact CO2 API request after HTTP error', [
+                            'attempt'     => $attempt,
+                            'maxAttempts' => $maxAttempts,
+                            'statusCode'  => $statusCode,
+                            'message'     => $errorMessage,
+                        ]);
+                        \usleep(200000 * $attempt);
+
+                        continue;
+                    }
+
+                    throw $exception;
+                } catch (Exception $e) {
+                    throw $e;
+                } catch (\Exception $e) {
+                    if ($attempt < $maxAttempts) {
+                        $this->getLogger()->warning('Retrying Impact CO2 API request after network error', [
+                            'attempt'     => $attempt,
+                            'maxAttempts' => $maxAttempts,
+                        ]);
+                        \usleep(200000 * $attempt);
+
+                        continue;
+                    }
+
+                    throw $e;
                 }
-
-                throw new Exception($errorMessage);
             }
-
-            return $endpoint->transformResponse(\is_array($content) ? $content : []);
         } catch (\Exception $e) {
             $this->getLogger()->error('Error during request', [
                 'exception' => $e,
@@ -291,6 +322,53 @@ class Client
         $logger->pushHandler($handler);
 
         return $logger;
+    }
+
+    /**
+     * @param mixed $content
+     */
+    private function buildHttpErrorMessage(int $statusCode, $content, string $rawBody): string
+    {
+        $detail = null;
+
+        if (\is_array($content)) {
+            foreach (['issues', 'error', 'message'] as $key) {
+                if (!isset($content[$key])) {
+                    continue;
+                }
+
+                if (\is_string($content[$key]) && $content[$key] !== '') {
+                    $detail = $content[$key];
+                    break;
+                }
+
+                if (\is_array($content[$key])) {
+                    $encoded = \json_encode($content[$key]);
+                    if (\is_string($encoded) && $encoded !== '' && $encoded !== 'null') {
+                        $detail = $encoded;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if ($detail === null) {
+            $trimmed = \trim($rawBody);
+            if ($trimmed !== '' && !\str_starts_with($trimmed, '<')) {
+                $detail = \substr($trimmed, 0, 200);
+            }
+        }
+
+        if ($detail === null) {
+            $detail = 'Unknown error';
+        }
+
+        return \sprintf('HTTP %d: %s', $statusCode, $detail);
+    }
+
+    private function isRetryableStatusCode(int $statusCode): bool
+    {
+        return \in_array($statusCode, [502, 503, 504], true);
     }
 
     /**

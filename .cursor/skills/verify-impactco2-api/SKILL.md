@@ -65,9 +65,9 @@ python3 scripts/verify_api_parity.py --root . --json
 |----------|--------|
 | Paths OpenAPI vs `ENDPOINT` (templates `{id}` inclus) | OpenAPI + scan `src/Endpoints/` |
 | Params query | OpenAPI vs `parent::__construct` |
-| Enums (valeurs) | matching auto OpenAPI ↔ `src/Enum/*.php` |
+| Enums (valeurs) | matching auto **OpenAPI uniquement** ↔ `src/Enum/*.php` (extras = erreur) |
 | Slugs thématiques | live `/thematiques` + map slug enum |
-| Types chauffage | GitHub `chauffage.ts` (enrichissement si OpenAPI en retard) |
+| Drift chauffage amont | GitHub `chauffage.ts` / sondage live vs OpenAPI (**warning** si OpenAPI en retard) |
 | Transports (tous les IDs OpenAPI, y compris ≥100) | OpenAPI ↔ `TransportsEnum` |
 | Smoke live (URL auto) | tous les paths OpenAPI |
 | Schémas entités | `Entity::*::fromArray` découvert via endpoints |
@@ -96,8 +96,10 @@ Ne pas dump le JSON brut sauf si demandé. Citer la doc : [API Impact CO₂](htt
 
 ## Pièges connus
 
-- La source de vérité des paramètres est l'**OpenAPI** (`/api/v1/doc`), pas les params acceptés en live hors doc.
-- `/chauffage` ne renvoie pas les `id` dans `data` → le script lit les IDs depuis le dépôt ADEME ou par sondage `?chauffages=N`.
+- La source de vérité des paramètres / enums est l'**OpenAPI** (`/api/v1/doc`), pas le dépôt ADEME ni les IDs acceptés en live hors doc.
+- Ne **jamais** enrichir les valeurs OpenAPI avec GitHub/live pour la comparaison enums (ça masquait les IDs chauffage `8`/`9`).
+- GitHub/live peut lister des IDs absents de l'OpenAPI → **warning** `openapi_heater_lag` ; la lib reste calée sur l'OpenAPI.
+- `/chauffage` ne renvoie pas les `id` dans `data` → le contrôle amont lit GitHub ou sonde `?chauffages=N` uniquement pour le drift doc.
 - Les IDs transport `100–204` sont des variantes détaillées : elles sont toutes dans `TransportsEnum` (ex. `CAR_SMALL_PETROL`, `CAR_HYBRID_5`).
 
 ## Hors scope
