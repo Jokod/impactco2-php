@@ -2,6 +2,18 @@
 
 Tous les changements notables de ce projet sont documentés dans ce fichier.
 
+## [1.3.6] - 2026-09-05
+
+### Corrigé
+
+- **Client** : messages d'erreur HTTP explicites (`HTTP 502: …`) en lisant aussi les champs `error` / `message` (ex. erreurs Scalingo), plus seulement `issues`.
+- **Client** : 3 tentatives automatiques sur erreurs réseau et HTTP 502/503/504 (backoff court).
+- **Client** : suppression du code mort après la boucle de retry ; test d'erreur HTTP avec `issues` tableau — couverture `src/` à 100 %.
+- **HeaterEnum** : retrait des IDs `8` / `9` (`PELLET_BOILER_HEATING`, `WOOD_BOILER_HEATING`) absents de l'OpenAPI `/chauffage` — alignement strict sur la doc API (1–7).
+- **Script** `verify_api_parity.py` : l'OpenAPI est la seule source de vérité pour les enums (plus d'enrichissement GitHub qui masquait les écarts) ; les valeurs lib hors OpenAPI sont des **erreurs** ; un **avertissement** signale si GitHub/live a des IDs chauffage absents de l'OpenAPI.
+
+[1.3.6]: https://github.com/jokod/impactco2-php/compare/1.3.5...1.3.6
+
 ## [1.3.5] - 2026-08-06
 
 ### Ajouté

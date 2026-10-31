@@ -379,7 +379,36 @@ class ClientTest extends TestCase
         $client->setHttpClient($httpClient);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unknown error');
+        $this->expectExceptionMessage('HTTP 500: Unknown error');
+        /** @var Endpoint $endpoint */
+        $client->execute($endpoint);
+    }
+
+    public function testExecuteErrorWithArrayIssues(): void
+    {
+        $endpoint = $this->createStub(Endpoint::class);
+        $endpoint->method('getPath')->willReturn('test_path');
+
+        $responseBody = $this->createStub(StreamInterface::class);
+        $responseBody->method('getContents')->willReturn(\json_encode([
+            'issues' => [
+                ['path' => 'km', 'message' => 'Required'],
+            ],
+        ]));
+
+        $response = $this->createStub(ResponseInterface::class);
+        $response->method('getStatusCode')->willReturn(400);
+        $response->method('getBody')->willReturn($responseBody);
+
+        $httpClient = $this->createStub(ClientInterface::class);
+        $httpClient->method('request')->willReturn($response);
+
+        $client = new Client();
+        /** @var ClientInterface $httpClient */
+        $client->setHttpClient($httpClient);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('HTTP 400: [{"path":"km","message":"Required"}]');
         /** @var Endpoint $endpoint */
         $client->execute($endpoint);
     }
@@ -404,9 +433,102 @@ class ClientTest extends TestCase
         $client->setHttpClient($httpClient);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unknown error');
+        $this->expectExceptionMessage('HTTP 500: {"test":"test"}');
         /** @var Endpoint $endpoint */
         $client->execute($endpoint);
+    }
+
+    public function testExecuteHtmlErrorFallsBackToUnknown(): void
+    {
+        $endpoint = $this->createStub(Endpoint::class);
+        $endpoint->method('getPath')->willReturn('test_path');
+
+        $responseBody = $this->createStub(StreamInterface::class);
+        $responseBody->method('getContents')->willReturn('<!DOCTYPE html><html><title>App faced an error</title></html>');
+
+        $response = $this->createStub(ResponseInterface::class);
+        $response->method('getBody')->willReturn($responseBody);
+        $response->method('getStatusCode')->willReturn(502);
+
+        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient->expects($this->exactly(3))
+            ->method('request')
+            ->willReturn($response);
+
+        $client = new Client();
+        $client->setHttpClient($httpClient);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('HTTP 502: Unknown error');
+        /** @var Endpoint $endpoint */
+        $client->execute($endpoint);
+    }
+
+    public function testExecuteScalingoErrorMessage(): void
+    {
+        $endpoint = $this->createStub(Endpoint::class);
+        $endpoint->method('getPath')->willReturn('test_path');
+
+        $responseBody = $this->createStub(StreamInterface::class);
+        $responseBody->method('getContents')->willReturn(\json_encode([
+            'source' => 'scalingo',
+            'error'  => 'application has not been able to handle the request',
+        ]));
+
+        $response = $this->createStub(ResponseInterface::class);
+        $response->method('getBody')->willReturn($responseBody);
+        $response->method('getStatusCode')->willReturn(502);
+
+        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient->expects($this->exactly(3))
+            ->method('request')
+            ->willReturn($response);
+
+        $client = new Client();
+        $client->setHttpClient($httpClient);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('HTTP 502: application has not been able to handle the request');
+        /** @var Endpoint $endpoint */
+        $client->execute($endpoint);
+    }
+
+    public function testExecuteRetriesThenSucceedsOn502(): void
+    {
+        $endpoint = $this->createStub(Endpoint::class);
+        $endpoint->method('getPath')->willReturn('test_path');
+        $endpoint->method('transformResponse')->willReturnCallback(
+            static fn (array $raw): ApiResponse => new ApiResponse($raw['data'] ?? [], null)
+        );
+
+        $errorBody = $this->createStub(StreamInterface::class);
+        $errorBody->method('getContents')->willReturn(\json_encode([
+            'source' => 'scalingo',
+            'error'  => 'application has not been able to handle the request',
+        ]));
+
+        $errorResponse = $this->createStub(ResponseInterface::class);
+        $errorResponse->method('getStatusCode')->willReturn(502);
+        $errorResponse->method('getBody')->willReturn($errorBody);
+
+        $successBody = $this->createStub(StreamInterface::class);
+        $successBody->method('getContents')->willReturn(\json_encode(['data' => ['ok']]));
+
+        $successResponse = $this->createStub(ResponseInterface::class);
+        $successResponse->method('getStatusCode')->willReturn(200);
+        $successResponse->method('getBody')->willReturn($successBody);
+
+        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient->expects($this->exactly(2))
+            ->method('request')
+            ->willReturnOnConsecutiveCalls($errorResponse, $successResponse);
+
+        $client = new Client();
+        $client->setHttpClient($httpClient);
+
+        /** @var Endpoint $endpoint */
+        $result = $client->execute($endpoint);
+        $this->assertSame(['ok'], $result->getData());
     }
 
     public function testAddOptions(): void
